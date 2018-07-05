@@ -321,6 +321,7 @@ void ZEDWrapperNodelet::onInit() {
     param.sdk_verbose = true;
     param.sdk_gpu_id = gpu_id;
     param.depth_stabilization = depth_stabilization;
+	param.camera_image_flip = flip;
 
     sl::ERROR_CODE err = sl::ERROR_CODE_CAMERA_NOT_DETECTED;
     while (err != sl::SUCCESS) {
@@ -372,12 +373,21 @@ void ZEDWrapperNodelet::onInit() {
     }
 
 
+    nh_ns.getParam("brightness", brightness);
+    nh_ns.getParam("contrast", contrast);
+    nh_ns.getParam("hue", hue);
+    nh_ns.getParam("saturation", saturation);
     nh_ns.getParam("confidence", confidence);
     nh_ns.getParam("exposure", exposure);
     nh_ns.getParam("gain", gain);
     nh_ns.getParam("auto_exposure", autoExposure);
     if (autoExposure)
         triggerAutoExposure = true;
+    nh_ns.getParam("whitebalance", whitebalance);
+    nh_ns.getParam("auto_whitebalance", autoWhitebalance);
+    if (autoWhitebalance)
+        triggerAutoWhitebalance = true;
+    nh_ns.getParam("flip", flip);
 
     // Create all the publishers
     // Image publishers
@@ -458,7 +468,7 @@ void ZEDWrapperNodelet::onInit() {
 
 }
 
-sensor_msgs::ImagePtr ZEDWrapperNodelet::imageToROSmsg(cv::Mat img, const std::string encodingType, std::string frameId, ros::Time t) {
+sensor_msgs::ImagePtr ZEDWrapperNodelet::imageToROSmsg(const cv::Mat img, const std::string &encodingType, const std::string &frameId, const ros::Time &t) {
     sensor_msgs::ImagePtr ptr = boost::make_shared<sensor_msgs::Image>();
     sensor_msgs::Image& imgMessage = *ptr;
     imgMessage.header.stamp = t;
@@ -479,7 +489,7 @@ sensor_msgs::ImagePtr ZEDWrapperNodelet::imageToROSmsg(cv::Mat img, const std::s
         uchar* rosData = (uchar*) (&imgMessage.data[0]);
 
 #pragma omp parallel for
-        for (unsigned int i = 0; i < img.rows; i++) {
+        for (int i = 0; i < img.rows; i++) {
             memcpy(rosData, opencvData, imgMessage.step);
             rosData += imgMessage.step;
             opencvData += img.step;
@@ -620,7 +630,7 @@ void ZEDWrapperNodelet::publishOdom(tf2::Transform odom_base_transform, ros::Tim
     pub_odom.publish(odom);
 }
 
-void ZEDWrapperNodelet::publishPose(tf2::Transform base_transform, ros::Time t) {
+void ZEDWrapperNodelet::publishPose(const tf2::Transform &base_transform, const ros::Time &t) {
     geometry_msgs::PoseStamped pose;
     pose.header.stamp = t;
     pose.header.frame_id = pose_frame_id; // map_frame
@@ -638,7 +648,7 @@ void ZEDWrapperNodelet::publishPose(tf2::Transform base_transform, ros::Time t) 
     pub_pose.publish(pose);
 }
 
-void ZEDWrapperNodelet::publishPoseFrame(tf2::Transform base_transform, ros::Time t) {
+void ZEDWrapperNodelet::publishPoseFrame(const tf2::Transform &base_transform, const ros::Time &t) {
     geometry_msgs::TransformStamped transformStamped;
     transformStamped.header.stamp = t;
     transformStamped.header.frame_id = pose_frame_id;
@@ -649,7 +659,7 @@ void ZEDWrapperNodelet::publishPoseFrame(tf2::Transform base_transform, ros::Tim
     transform_pose_broadcaster.sendTransform(transformStamped);
 }
 
-void ZEDWrapperNodelet::publishOdomFrame(tf2::Transform base_transform, ros::Time t) {
+void ZEDWrapperNodelet::publishOdomFrame(const tf2::Transform &base_transform, const ros::Time &t) {
     geometry_msgs::TransformStamped transformStamped;
     transformStamped.header.stamp = t;
     transformStamped.header.frame_id = odometry_frame_id;
@@ -660,7 +670,7 @@ void ZEDWrapperNodelet::publishOdomFrame(tf2::Transform base_transform, ros::Tim
     transform_odom_broadcaster.sendTransform(transformStamped);
 }
 
-void ZEDWrapperNodelet::publishImuFrame(tf2::Transform base_transform) {
+void ZEDWrapperNodelet::publishImuFrame(const tf2::Transform &base_transform) {
     geometry_msgs::TransformStamped transformStamped;
     transformStamped.header.stamp = imu_time;
     transformStamped.header.frame_id = base_frame_id;
@@ -671,11 +681,11 @@ void ZEDWrapperNodelet::publishImuFrame(tf2::Transform base_transform) {
     transform_imu_broadcaster.sendTransform(transformStamped);
 }
 
-void ZEDWrapperNodelet::publishImage(cv::Mat img, image_transport::Publisher &pub_img, string img_frame_id, ros::Time t) {
+void ZEDWrapperNodelet::publishImage(const cv::Mat img, const image_transport::Publisher &pub_img, const string &img_frame_id, const ros::Time &t) {
     pub_img.publish(imageToROSmsg(img, sensor_msgs::image_encodings::BGR8, img_frame_id, t));
 }
 
-void ZEDWrapperNodelet::publishDepth(cv::Mat depth, ros::Time t) {
+void ZEDWrapperNodelet::publishDepth(const cv::Mat depth, const ros::Time &t) {
     string encoding;
     if (openniDepthMode) {
         depth *= 1000.0f;
@@ -688,7 +698,7 @@ void ZEDWrapperNodelet::publishDepth(cv::Mat depth, ros::Time t) {
     pub_depth.publish(imageToROSmsg(depth, encoding, depth_opt_frame_id, t));
 }
 
-void ZEDWrapperNodelet::publishDisparity(cv::Mat disparity, ros::Time t) {
+void ZEDWrapperNodelet::publishDisparity(const cv::Mat disparity, const ros::Time &t) {
     sl::CameraInformation zedParam = zed.getCameraInformation(sl::Resolution(mat_width, mat_height));
     sensor_msgs::ImagePtr disparity_image = imageToROSmsg(disparity,  sensor_msgs::image_encodings::TYPE_32FC1, disparity_frame_id, t);
 
@@ -763,7 +773,7 @@ void ZEDWrapperNodelet::publishPointCloud(int width, int height) {
     pub_cloud.publish(output);
 }
 
-void ZEDWrapperNodelet::publishCamInfo(sensor_msgs::CameraInfoPtr cam_info_msg, ros::Publisher pub_cam_info, ros::Time t) {
+void ZEDWrapperNodelet::publishCamInfo(sensor_msgs::CameraInfoPtr cam_info_msg, ros::Publisher pub_cam_info, const ros::Time &t) {
     static int seq = 0;
     cam_info_msg->header.stamp = t;
     cam_info_msg->header.seq = seq;
@@ -772,7 +782,7 @@ void ZEDWrapperNodelet::publishCamInfo(sensor_msgs::CameraInfoPtr cam_info_msg, 
 }
 
 void ZEDWrapperNodelet::fillCamInfo(sl::Camera& zed, sensor_msgs::CameraInfoPtr left_cam_info_msg, sensor_msgs::CameraInfoPtr right_cam_info_msg,
-                                    string left_frame_id, string right_frame_id, bool raw_param /*= false*/) {
+                                    const string &left_frame_id, const string &right_frame_id, bool raw_param /*= false*/) {
 
     //    int width = zed.getResolution().width;
     //    int height = zed.getResolution().height;
@@ -886,7 +896,34 @@ void ZEDWrapperNodelet::dynamicReconfCallback(zed_wrapper::ZedConfig &config, ui
         rgb_cam_info_raw_msg = left_cam_info_raw_msg;
 
         dataMutex.unlock();
+        break;
 
+	// TODO : maybe renumber these to match order in docs?
+    case 5:
+        brightness = config.brightness;
+        NODELET_INFO("Reconfigure brightness : %d", brightness);
+        break;
+    case 6:
+        contrast = config.contrast;
+        NODELET_INFO("Reconfigure contrast : %d", contrast);
+        break;
+    case 7:
+        hue = config.hue;
+        NODELET_INFO("Reconfigure hue : %d", hue);
+        break;
+    case 8:
+        saturation = config.saturation;
+        NODELET_INFO("Reconfigure saturation : %d", saturation);
+        break;
+    case 9:
+        whitebalance = config.whitebalance;
+        NODELET_INFO("Reconfigure whitebalance : %d", whitebalance);
+        break;
+    case 10:
+        autoWhitebalance = config.auto_whitebalance;
+        if (autoWhitebalance)
+            triggerAutoWhitebalance = true;
+        NODELET_INFO("Reconfigure auto control of whitebalance : %s", autoWhitebalance ? "Enable" : "Disable");
         break;
     }
 }
@@ -1173,19 +1210,47 @@ void ZEDWrapperNodelet::device_poll() {
 
             dataMutex.lock();
 
-            // Publish the left == rgb image if someone has subscribed to
-            if (left_SubNumber > 0 || rgb_SubNumber > 0) {
-                // Retrieve RGBA Left image
-                zed.retrieveImage(leftZEDMat, sl::VIEW_LEFT, sl::MEM_CPU, mat_width, mat_height);
-                cv::cvtColor(sl_tools::toCVMat(leftZEDMat), leftImRGB, CV_RGBA2RGB);
-                if (left_SubNumber > 0) {
-                    publishCamInfo(left_cam_info_msg, pub_left_cam_info, t);
+			int actual_brightness = zed.getCameraSettings(sl::CAMERA_SETTINGS_BRIGHTNESS);
+			if (actual_brightness != brightness)
+				zed.setCameraSettings(sl::CAMERA_SETTINGS_BRIGHTNESS, brightness);
+
+			int actual_contrast = zed.getCameraSettings(sl::CAMERA_SETTINGS_CONTRAST);
+			if (actual_contrast != contrast)
+				zed.setCameraSettings(sl::CAMERA_SETTINGS_CONTRAST, contrast);
+
+			int actual_hue = zed.getCameraSettings(sl::CAMERA_SETTINGS_HUE);
+			if (actual_hue != hue)
+				zed.setCameraSettings(sl::CAMERA_SETTINGS_HUE, hue);
+			int actual_saturation = zed.getCameraSettings(sl::CAMERA_SETTINGS_SATURATION);
+			if (actual_saturation != saturation)
+				zed.setCameraSettings(sl::CAMERA_SETTINGS_SATURATION, saturation);
+
+			// Publish the left == rgb image if someone has subscribed to
+			if (left_SubNumber > 0 || rgb_SubNumber > 0) {
+				// Retrieve RGBA Left image
+				zed.retrieveImage(leftZEDMat, sl::VIEW_LEFT, sl::MEM_CPU, mat_width, mat_height);
+				cv::cvtColor(sl_tools::toCVMat(leftZEDMat), leftImRGB, CV_RGBA2RGB);
+				if (left_SubNumber > 0) {
+					publishCamInfo(left_cam_info_msg, pub_left_cam_info, t);
                     publishImage(leftImRGB, pub_left, left_cam_opt_frame_id, t);
                 }
                 if (rgb_SubNumber > 0) {
                     publishCamInfo(rgb_cam_info_msg, pub_rgb_cam_info, t);
                     publishImage(leftImRGB, pub_rgb, depth_opt_frame_id, t); // rgb is the left image
                 }
+            }
+
+            if (autoWhitebalance) {
+                // getCameraSettings() can't check status of auto whitebalance
+                // triggerAutoWhitebalance is used to execute setCameraSettings() only once
+                if (triggerAutoWhitebalance) {
+                    zed.setCameraSettings(sl::CAMERA_SETTINGS_WHITEBALANCE, 0, true);
+                    triggerAutoWhitebalance = false;
+                }
+            } else {
+                int actual_whitebalance = zed.getCameraSettings(sl::CAMERA_SETTINGS_WHITEBALANCE);
+                if (actual_whitebalance != whitebalance)
+                    zed.setCameraSettings(sl::CAMERA_SETTINGS_WHITEBALANCE, whitebalance);
             }
 
             // Publish the left_raw == rgb_raw image if someone has subscribed to

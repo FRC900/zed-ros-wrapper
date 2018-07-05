@@ -20,9 +20,24 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <arg name="camera_model"          default="0" /> <!-- 0=ZED, 1=ZEDM-->
     <arg name="svo_file"              default="" /><!-- <arg name="svo_file" default="path/to/svo/file.svo"> -->
     <arg name="zed_id"                default="0" />
+
     <!-- If a ZED SN is given, zed_id is ignored and the wrapper will specifically look for the ZED with the corresponding serial number -->
     <arg name="serial_number"         default="0" /> 
     <arg name="resolution"            default="2" />
+	<arg name="quality"               default="1" />
+	<arg name="sensing_mode"          default="1" /> <!-- or 0? -->
+	<arg name="frame_rate"            default="60" />
+	<arg name="brightness"            default="-1"/>
+	<arg name="contrast"              default="-1"/>
+	<arg name="hue"                   default="-1"/>
+	<arg name="saturation"            default="-1"/>
+	<arg name="gain"                  default="-1"/>
+	<arg name="exposure"              default="-1"/>
+	<arg name="auto_exposure"         default="True"/>
+	<arg name="whitebalance"          default="-1"/>
+	<arg name="auto_whitebalance"     default="True"/>
+	<arg name="flip"                  default="False"/>
+	<arg name="publish_transform"     default="True"/>
 
     <!-- GPU ID-->
     <arg name="gpu_id"                default="-1" />
@@ -72,16 +87,24 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
         <param name="resolution"            value="$(arg resolution)" />
         <param name="mat_resize_factor"     value="1.0" />
-        <param name="quality"               value="1" />
-        <param name="sensing_mode"          value="0" />
-        <param name="frame_rate"            value="60" />
+        <param name="quality"               value="$(arg quality)" />
+        <param name="sensing_mode"          value="$(arg sensing_mode)" />
+        <param name="frame_rate"            value="$(arg frame_rate)" />
         <param name="odometry_db"           value="" />
         <param name="openni_depth_mode"     value="0" />
         <param name="gpu_id"                value="$(arg gpu_id)" />
         <param name="confidence"            value="100" />
-        <param name="gain"                  value="100" />
-        <param name="exposure"              value="100" />
-        <param name="auto_exposure"         value="true" />
+        <param name="gain"                  value="$(arg gain)" />
+        <param name="exposure"              value="$(arg exposure)" />
+        <param name="auto_exposure"         value="$(arg auto_exposure)" />
+        <param name="brightness"            value="$(arg brightness)" />
+        <param name="contrast"              value="$(arg contrast)" />
+        <param name="hue"                   value="$(arg hue)" />
+        <param name="saturation"            value="$(arg saturation)" />
+        <param name="whitebalance"          value="$(arg whitebalance)" />
+        <param name="auto_whitebalance"     value="$(arg auto_whitebalance)" />
+        <param name="flip"                  value="$(arg flip)" />
+
         <param name="depth_stabilization"   value="1" />
         <param name="pose_smoothing"        value="false" />
         <param name="spatial_memory"        value="true" />

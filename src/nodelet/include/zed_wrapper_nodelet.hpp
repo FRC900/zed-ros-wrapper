@@ -67,7 +67,7 @@ public:
          * \param frameId : the id of the reference frame of the image
          * \param t : the ros::Time to stamp the image
          */
-    static sensor_msgs::ImagePtr imageToROSmsg(cv::Mat img, const std::string encodingType, std::string frameId, ros::Time t);
+        static sensor_msgs::ImagePtr imageToROSmsg(const cv::Mat img, const std::string &encodingType, const std::string &frameId, const ros::Time &t);
 
 private:
     /* \brief Initialization function called by the Nodelet base class
@@ -84,7 +84,7 @@ protected:
          * \param pose_base_transform : Transformation representing the camera pose from base frame
          * \param t : the ros::Time to stamp the image
          */
-    void publishPose(tf2::Transform pose_base_transform, ros::Time t);
+        void publishPose(const tf2::Transform &pose_base_transform, const ros::Time &t);
 
     /* \brief Publish the pose of the camera with a ros Publisher
          * \param odom_base_transform : Transformation representing the camera pose from base frame
@@ -96,19 +96,19 @@ protected:
          * \param base_transform : Transformation representing the camera pose from base frame
          * \param t : the ros::Time to stamp the image
          */
-    void publishPoseFrame(tf2::Transform base_transform, ros::Time t);
+        void publishPoseFrame(const tf2::Transform &base_transform, const ros::Time &t);
 
     /* \brief Publish the odometry of the camera as a transformation
          * \param base_transform : Transformation representing the camera pose from base frame
          * \param t : the ros::Time to stamp the image
          */
-    void publishOdomFrame(tf2::Transform odom_base_transform, ros::Time t);
+    void publishOdomFrame(const tf2::Transform &odom_base_transform, const ros::Time &t);
 
     /* \brief Publish the pose of the imu as a transformation
          * \param base_transform : Transformation representing the imu pose from camera frame
          * \param t : the ros::Time to stamp the image
          */
-    void publishImuFrame(tf2::Transform base_transform);
+    void publishImuFrame(const tf2::Transform &base_transform);
 
     /* \brief Publish a cv::Mat image with a ros Publisher
          * \param img : the image to publish
@@ -116,13 +116,13 @@ protected:
          * \param img_frame_id : the id of the reference frame of the image (different image frames exist)
          * \param t : the ros::Time to stamp the image
          */
-    void publishImage(cv::Mat img, image_transport::Publisher &pub_img, string img_frame_id, ros::Time t);
+        void publishImage(const cv::Mat img, const image_transport::Publisher &pub_img, const string &img_frame_id, const ros::Time &t);
 
     /* \brief Publish a cv::Mat depth image with a ros Publisher
          * \param depth : the depth image to publish
          * \param t : the ros::Time to stamp the depth image
          */
-    void publishDepth(cv::Mat depth, ros::Time t);
+        void publishDepth(const cv::Mat depth, const ros::Time &t);
 
     /* \brief Publish a cv::Mat confidence image with a ros Publisher
          * \param conf : the confidence image to publish
@@ -141,13 +141,13 @@ protected:
          * \param pub_cam_info : the publisher object to use
          * \param t : the ros::Time to stamp the message
          */
-    void publishCamInfo(sensor_msgs::CameraInfoPtr cam_info_msg, ros::Publisher pub_cam_info, ros::Time t);
+        void publishCamInfo(sensor_msgs::CameraInfoPtr cam_info_msg, ros::Publisher pub_cam_info, const ros::Time &t);
 
     /* \brief Publish a cv::Mat disparity image with a ros Publisher
          * \param disparity : the disparity image to publish
          * \param t : the ros::Time to stamp the depth image
          */
-    void publishDisparity(cv::Mat disparity, ros::Time t);
+        void publishDisparity(const cv::Mat disparity, const ros::Time &t);
 
     /* \brief Get the information of the ZED cameras and store them in an information message
          * \param zed : the sl::zed::Camera* pointer to an instance
@@ -156,8 +156,8 @@ protected:
          * \param left_frame_id : the id of the reference frame of the left camera
          * \param right_frame_id : the id of the reference frame of the right camera
          */
-    void fillCamInfo(sl::Camera& zed, sensor_msgs::CameraInfoPtr left_cam_info_msg, sensor_msgs::CameraInfoPtr right_cam_info_msg,
-                     string left_frame_id, string right_frame_id, bool raw_param = false);
+        void fillCamInfo(sl::Camera& zed, sensor_msgs::CameraInfoPtr left_cam_info_msg, sensor_msgs::CameraInfoPtr right_cam_info_msg,
+                const string &left_frame_id, const string &right_frame_id, bool raw_param = false);        
 
     /* \brief Callback to handle dynamic reconfigure events in ROS
          */
@@ -184,7 +184,7 @@ protected:
          */
     void set_pose( float xt, float yt, float zt, float rr, float pr, float yr);
 
-    /* \bried Start tracking loading the parameters from param server
+    /* \brief Start tracking loading the parameters from param server
          */
     void start_tracking();
 
@@ -306,11 +306,20 @@ private:
     // flags
     double mat_resize_factor;
     int confidence;
+	int brightness;
+	int contrast;
+	int hue;
+	int saturation;
     int exposure;
     int gain;
     bool autoExposure;
     bool triggerAutoExposure;
     bool computeDepth;
+	int whitebalance;
+	bool autoWhitebalance;
+	bool triggerAutoWhitebalance;
+	bool flip;
+
     bool grabbing = false;
     int openniDepthMode = 0; // 16 bit UC data in mm else 32F in m, for more info http://www.ros.org/reps/rep-0118.html
 
