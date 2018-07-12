@@ -128,7 +128,7 @@ protected:
          * \param conf : the confidence image to publish
          * \param t : the ros::Time to stamp the depth image
          */
-    void publishConf(cv::Mat conf, ros::Time t);
+    void publishConf(const cv::Mat conf, const ros::Time &t);
 
     /* \brief Publish a pointCloud with a ros Publisher
          * \param width : the width of the point cloud
