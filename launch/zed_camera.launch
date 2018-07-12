@@ -38,6 +38,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	<arg name="auto_whitebalance"     default="True"/>
 	<arg name="flip"                  default="False"/>
 	<arg name="publish_transform"     default="True"/>
+    <arg name="verbose"               default="true" />
+>>>>>>> Added "verbose" parameter as for zendesk request
 
     <!-- GPU ID-->
     <arg name="gpu_id"                default="-1" />
@@ -86,6 +88,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         <param name="serial_number"         value="$(arg serial_number)" />
 
         <param name="resolution"            value="$(arg resolution)" />
+        <param name="verbose"               value="$(arg verbose)" />
         <param name="mat_resize_factor"     value="1.0" />
         <param name="quality"               value="$(arg quality)" />
         <param name="sensing_mode"          value="$(arg sensing_mode)" />
