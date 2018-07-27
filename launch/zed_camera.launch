@@ -31,8 +31,29 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
          RESOLUTION_HD720  -> 1280*720,  available framerates: 15, 30, 60 fps.
          RESOLUTION_VGA    -> 672*376,   available framerates: 15, 30, 60, 100 fps. -->
 
-    <!-- GPU ID-->
-    <arg name="gpu_id"                default="-1" />
+	<arg name="quality"               default="1" /> <!-- 0=DEPTH_MODE_NONE, 1=DEPTH_MODE_PERFORMANCE, 2=DEPTH_MODE_MEDIUM, 3=DEPTH_MODE_QUALITY, 4=DEPTH_MODE_ULTRA -->
+	<!--
+		DEPTH_MODE_NONE -> This mode does not compute any depth map. Only rectified stereo images will be available.
+        DEPTH_MODE_PERFORMANCE -> Computation mode optimized for speed.
+        DEPTH_MODE_MEDIUM -> Balanced quality mode. Depth map is robust in any environment and requires medium resources for computation.
+        DEPTH_MODE_QUALITY -> Computation mode designed for high quality results.
+        DEPTH_MODE_ULTRA -> Computation mode favorising edges and sharpness. Requires lot of GPU memory and high computation power in /ref SENSING_MODE_FILL.
+		 -->
+	<arg name="sensing_mode"          default="1" /> <!-- 0=SENSING_MODE_STANDARD, 1=SENSING_MODE_FILL -->
+
+	<arg name="brightness"            default="-1"/>
+	<arg name="contrast"              default="-1"/>
+	<arg name="hue"                   default="-1"/>
+	<arg name="saturation"            default="-1"/>
+	<arg name="gain"                  default="-1"/>
+	<arg name="exposure"              default="-1"/>
+	<arg name="auto_exposure"         default="true"/>
+	<arg name="whitebalance"          default="-1"/>
+	<arg name="auto_whitebalance"     default="true"/>
+	<arg name="flip"                  default="false"/>
+
+	<!-- GPU ID-->
+	<arg name="gpu_id"                default="-1" />
 
     <!-- Definition coordinate frames -->
     <arg name="publish_tf"                    default="true" />
@@ -80,16 +101,24 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         <param name="resolution"            value="$(arg resolution)" />
         <param name="verbose"               value="$(arg verbose)" />
         <param name="mat_resize_factor"     value="1.0" />
-        <param name="quality"               value="1" />
-        <param name="sensing_mode"          value="0" />
+        <param name="quality"               value="$(arg quality)" />
+        <param name="sensing_mode"          value="$(arg sensing_mode)" />
         <param name="frame_rate"            value="$(arg frame_rate)" />
         <param name="odometry_db"           value="" />
         <param name="openni_depth_mode"     value="0" />
         <param name="gpu_id"                value="$(arg gpu_id)" />
         <param name="confidence"            value="100" />
-        <param name="gain"                  value="100" />
-        <param name="exposure"              value="100" />
-        <param name="auto_exposure"         value="true" />
+        <param name="gain"                  value="$(arg gain)" />
+        <param name="exposure"              value="$(arg exposure)" />
+        <param name="auto_exposure"         value="$(arg auto_exposure)" />
+        <param name="brightness"            value="$(arg brightness)" />
+        <param name="contrast"              value="$(arg contrast)" />
+        <param name="hue"                   value="$(arg hue)" />
+        <param name="saturation"            value="$(arg saturation)" />
+        <param name="whitebalance"          value="$(arg whitebalance)" />
+        <param name="auto_whitebalance"     value="$(arg auto_whitebalance)" />
+        <param name="flip"                  value="$(arg flip)" />
+
         <param name="depth_stabilization"   value="1" />
         <param name="pose_smoothing"        value="false" />
         <param name="spatial_memory"        value="true" />

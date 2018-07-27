@@ -322,11 +322,20 @@ private:
     // flags
     double matResizeFactor;
     int confidence;
+	int brightness;
+	int contrast;
+	int hue;
+	int saturation;
     int exposure;
     int gain;
     bool autoExposure;
     bool triggerAutoExposure;
+	int whitebalance;
+	bool autoWhitebalance;
+	bool triggerAutoWhitebalance;
+	bool flip;
     bool computeDepth;
+
     bool grabbing = false;
     int openniDepthMode = 0; // 16 bit UC data in mm else 32F in m, for more info http://www.ros.org/reps/rep-0118.html
 

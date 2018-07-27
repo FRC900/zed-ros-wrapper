@@ -338,6 +338,7 @@ void ZEDWrapperNodelet::onInit() {
   param.sdk_verbose = verbose;
   param.sdk_gpu_id = gpuId;
   param.depth_stabilization = depthStabilization;
+  param.camera_image_flip = flip;
 
   sl::ERROR_CODE err = sl::ERROR_CODE_CAMERA_NOT_DETECTED;
   while (err != sl::SUCCESS) {
@@ -393,11 +394,19 @@ void ZEDWrapperNodelet::onInit() {
   }
 
   nhNs.getParam("confidence", confidence);
+  nhNs.getParam("brigheness", brightness);
+  nhNs.getParam("contrast", contrast);
+  nhNs.getParam("saturation", saturation);
+  nhNs.getParam("hue", hue);
   nhNs.getParam("exposure", exposure);
   nhNs.getParam("gain", gain);
   nhNs.getParam("auto_exposure", autoExposure);
   if (autoExposure)
     triggerAutoExposure = true;
+  nhNs.getParam("auto_whitebalance", autoWhitebalance);
+  if (autoWhitebalance)
+    triggerAutoWhitebalance = true;
+  nhNs.getParam("flip", flip);
 
   // Create all the publishers
   // Image publishers
@@ -1039,7 +1048,34 @@ void ZEDWrapperNodelet::dynamicReconfCallback(zed_wrapper::ZedConfig &config,
     dataMutex.unlock();
 
     break;
-  }
+	// TODO : maybe renumber these to match order in docs?
+    case 5:
+        brightness = config.brightness;
+        NODELET_INFO("Reconfigure brightness : %d", brightness);
+        break;
+    case 6:
+        contrast = config.contrast;
+        NODELET_INFO("Reconfigure contrast : %d", contrast);
+        break;
+    case 7:
+        hue = config.hue;
+        NODELET_INFO("Reconfigure hue : %d", hue);
+        break;
+    case 8:
+        saturation = config.saturation;
+        NODELET_INFO("Reconfigure saturation : %d", saturation);
+        break;
+    case 9:
+        whitebalance = config.whitebalance;
+        NODELET_INFO("Reconfigure whitebalance : %d", whitebalance);
+        break;
+    case 10:
+        autoWhitebalance = config.auto_whitebalance;
+        if (autoWhitebalance)
+            triggerAutoWhitebalance = true;
+        NODELET_INFO("Reconfigure auto control of whitebalance : %s", autoWhitebalance ? "Enable" : "Disable");
+        break;
+    }
 }
 
 void ZEDWrapperNodelet::imuPubCallback(const ros::TimerEvent &e) {
@@ -1327,8 +1363,24 @@ void ZEDWrapperNodelet::device_poll() {
       }
 
       // Time update
-      old_t =
-          sl_tools::slTime2Ros(zed.getTimestamp(sl::TIME_REFERENCE_CURRENT));
+	  old_t =
+		  sl_tools::slTime2Ros(zed.getTimestamp(sl::TIME_REFERENCE_CURRENT));
+
+	  int actual_brightness = zed.getCameraSettings(sl::CAMERA_SETTINGS_BRIGHTNESS);
+	  if (actual_brightness != brightness)
+		  zed.setCameraSettings(sl::CAMERA_SETTINGS_BRIGHTNESS, brightness);
+
+	  int actual_contrast = zed.getCameraSettings(sl::CAMERA_SETTINGS_CONTRAST);
+	  if (actual_contrast != contrast)
+		  zed.setCameraSettings(sl::CAMERA_SETTINGS_CONTRAST, contrast);
+
+	  int actual_hue = zed.getCameraSettings(sl::CAMERA_SETTINGS_HUE);
+	  if (actual_hue != hue)
+		  zed.setCameraSettings(sl::CAMERA_SETTINGS_HUE, hue);
+
+	  int actual_saturation = zed.getCameraSettings(sl::CAMERA_SETTINGS_SATURATION);
+	  if (actual_saturation != saturation)
+		  zed.setCameraSettings(sl::CAMERA_SETTINGS_SATURATION, saturation);
 
       if (autoExposure) {
         // getCameraSettings() can't check status of auto exposure
@@ -1347,6 +1399,19 @@ void ZEDWrapperNodelet::device_poll() {
         if (actual_gain != gain)
           zed.setCameraSettings(sl::CAMERA_SETTINGS_GAIN, gain);
       }
+
+	  if (autoWhitebalance) {
+		  // getCameraSettings() can't check status of auto whitebalance
+		  // triggerAutoWhitebalance is used to execute setCameraSettings() only once
+		  if (triggerAutoWhitebalance) {
+			  zed.setCameraSettings(sl::CAMERA_SETTINGS_WHITEBALANCE, 0, true);
+			  triggerAutoWhitebalance = false;
+		  }
+	  } else {
+		  int actual_whitebalance = zed.getCameraSettings(sl::CAMERA_SETTINGS_WHITEBALANCE);
+		  if (actual_whitebalance != whitebalance)
+			  zed.setCameraSettings(sl::CAMERA_SETTINGS_WHITEBALANCE, whitebalance);
+	  }
 
       dataMutex.lock();
 
