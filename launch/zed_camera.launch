@@ -41,14 +41,18 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 		 -->
 	<arg name="sensing_mode"          default="1" /> <!-- 0=SENSING_MODE_STANDARD, 1=SENSING_MODE_FILL -->
 
-	<arg name="brightness"            default="-1"/>
-	<arg name="contrast"              default="-1"/>
-	<arg name="hue"                   default="-1"/>
-	<arg name="saturation"            default="-1"/>
-	<arg name="gain"                  default="-1"/>
-	<arg name="exposure"              default="-1"/>
+	<arg name="brightness"            default="4"/>
+	<arg name="auto_brightness"       default="true"/>
+	<arg name="contrast"              default="4"/>
+	<arg name="auto_contrast"         default="true"/>
+	<arg name="hue"                   default="5"/>
+	<arg name="auto_hue"              default="true"/>
+	<arg name="saturation"            default="4"/>
+	<arg name="auto_saturation"       default="true"/>
+	<arg name="gain"                  default="50"/>
+	<arg name="exposure"              default="100"/>
 	<arg name="auto_exposure"         default="true"/>
-	<arg name="whitebalance"          default="-1"/>
+	<arg name="whitebalance"          default="50"/>
 	<arg name="auto_whitebalance"     default="true"/>
 	<arg name="flip"                  default="false"/>
 
@@ -112,9 +116,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         <param name="exposure"              value="$(arg exposure)" />
         <param name="auto_exposure"         value="$(arg auto_exposure)" />
         <param name="brightness"            value="$(arg brightness)" />
+        <param name="auto_brightness"       value="$(arg auto_brightness)" />
         <param name="contrast"              value="$(arg contrast)" />
+        <param name="auto_contrast"         value="$(arg auto_contrast)" />
         <param name="hue"                   value="$(arg hue)" />
+        <param name="auto_hue"              value="$(arg auto_hue)" />
         <param name="saturation"            value="$(arg saturation)" />
+        <param name="auto_saturation"       value="$(arg auto_saturation)" />
         <param name="whitebalance"          value="$(arg whitebalance)" />
         <param name="auto_whitebalance"     value="$(arg auto_whitebalance)" />
         <param name="flip"                  value="$(arg flip)" />

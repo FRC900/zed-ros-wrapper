@@ -323,9 +323,17 @@ private:
     double matResizeFactor;
     int confidence;
 	int brightness;
+	bool autoBrightness;
+	bool triggerAutoBrightness;
 	int contrast;
+	bool autoContrast;
+	bool triggerAutoContrast;
 	int hue;
+	bool autoHue;
+	bool triggerAutoHue;
 	int saturation;
+	bool autoSaturation;
+	bool triggerAutoSaturation;
     int exposure;
     int gain;
     bool autoExposure;
