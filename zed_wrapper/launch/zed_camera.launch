@@ -54,7 +54,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	<arg name="auto_exposure"         default="true"/>
 	<arg name="whitebalance"          default="50"/>
 	<arg name="auto_whitebalance"     default="true"/>
-	<arg name="flip"                  default="false"/>
 
 	<!-- GPU ID-->
 	<arg name="gpu_id"                default="-1" />
@@ -131,7 +130,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         <param name="auto_saturation"       value="$(arg auto_saturation)" />
         <param name="whitebalance"          value="$(arg whitebalance)" />
         <param name="auto_whitebalance"     value="$(arg auto_whitebalance)" />
-        <param name="flip"                  value="$(arg flip)" />
 
         <param name="depth_stabilization"   value="1" />
         <param name="pose_smoothing"        value="false" />
