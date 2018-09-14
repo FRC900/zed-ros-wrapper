@@ -31,7 +31,6 @@ if (NOT DEFINED CMAKE_TOOLCHAIN_FILE)
   endif()
 endif()
 
-
 if (BUILD_ME)
 	exec_program(uname ARGS -p OUTPUT_VARIABLE CMAKE_SYSTEM_NAME2)
 	if ( CMAKE_SYSTEM_NAME2 MATCHES "aarch64" ) # Jetson TX
@@ -96,7 +95,6 @@ if (BUILD_ME)
 		rosconsole
 		sensor_msgs
 		stereo_msgs
-		opencv3
 		image_transport
 		dynamic_reconfigure
 		tf2_ros
@@ -122,14 +120,12 @@ if (BUILD_ME)
 			${catkin_INCLUDE_DIRS}
 			${CUDA_INCLUDE_DIRS}
 			${ZED_INCLUDE_DIRS}
-			${OpenCV_INCLUDE_DIRS}
 			${CMAKE_CURRENT_SOURCE_DIR}/src/tools/include
 			${CMAKE_CURRENT_SOURCE_DIR}/src/nodelet/include
 	)
 
 	link_directories(${ZED_LIBRARY_DIR})
 	link_directories(${CUDA_LIBRARY_DIRS})
-	link_directories(${OpenCV_LIBRARY_DIRS})
 
 ###############################################################################
 
@@ -144,8 +140,7 @@ if (BUILD_ME)
 	set(LINK_LIBRARIES
 	  ${catkin_LIBRARIES}
 	  ${ZED_LIBRARIES}
-	  ${CUDA_LIBRARIES} ${CUDA_NPP_LIBRARIES_ZED}
-	  ${OpenCV_LIBS})
+	  ${CUDA_LIBRARIES} ${CUDA_NPP_LIBRARIES_ZED})
 
 	add_library(ZEDWrapper ${TOOLS_SRC} ${NODELET_SRC})
 	target_link_libraries(ZEDWrapper ${LINK_LIBRARIES})
