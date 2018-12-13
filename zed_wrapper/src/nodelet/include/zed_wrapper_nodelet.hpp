@@ -38,12 +38,14 @@
 #include <dynamic_reconfigure/server.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <diagnostic_updater/diagnostic_updater.h>
 
 #include <zed_wrapper/ZedConfig.h>
 #include <zed_wrapper/reset_tracking.h>
 #include <zed_wrapper/set_initial_pose.h>
 #include <zed_wrapper/reset_odometry.h>
 
+#include <memory>
 #include <mutex>
 #include <thread>
 #include <condition_variable>
@@ -89,7 +91,7 @@ namespace zed_wrapper {
          * \param slPose : latest odom pose from ZED SDK
          * \param t : the ros::Time to stamp the image
          */
-        void publishOdom(tf2::Transform base2odomTransf, sl::Pose& slPose, ros::Time t);
+        void publishOdom(tf2::Transform odom2baseTransf, sl::Pose& slPose, ros::Time t);
 
         /* \brief Publish the pose of the camera in "Map" frame as a transformation
          * \param baseTransform : Transformation representing the camera pose from
@@ -186,6 +188,11 @@ namespace zed_wrapper {
          * \param e : the ros::TimerEvent binded to the callback
          */
         void imuPubCallback(const ros::TimerEvent& e);
+
+        /* \brief Callback to update node diagnostic status
+         * \param stat : node status
+         */
+        void updateDiagnostic(diagnostic_updater::DiagnosticStatusWrapper& stat);
 
         /* \brief Service callback to reset_tracking service
          * Tracking pose is reinitialized to the value available in the ROS Param
@@ -334,6 +341,7 @@ namespace zed_wrapper {
         std::string mOdometryDb;
         std::string mSvoFilepath;
         double mImuPubRate;
+        bool mImuTimestampSync;
         double mPathPubRate;
         int mPathMaxCount;
         bool mVerbose;
@@ -342,6 +350,13 @@ namespace zed_wrapper {
         bool mTrackingActivated;
         bool mTrackingReady;
         bool mFloorAlignment = false;
+        bool mGrabActive = false; // Indicate if camera grabbing is active (at least one topic subscribed)
+        sl::ERROR_CODE mConnStatus;
+        sl::ERROR_CODE mGrabStatus;
+        sl::TRACKING_STATE mTrackingStatus;
+        bool mImuPublishing = false;
+        bool mPcPublishing = false;
+
 
         // Last frame time
         ros::Time mPrevFrameTimestamp;
@@ -355,9 +370,10 @@ namespace zed_wrapper {
         std::vector<geometry_msgs::PoseStamped> mMapPath;
 
         // TF Transforms
-        tf2::Transform mOdom2MapTransf;
-        tf2::Transform mBase2OdomTransf;
-        tf2::Transform mSensor2BaseTransf;
+        tf2::Transform mMap2OdomTransf;     // Coordinates of the odometry frame in map frame
+        tf2::Transform mOdom2BaseTransf;    // Coordinates of the base in odometry frame
+        tf2::Transform mMap2BaseTransf;     // Coordinates of the base in base frame
+        tf2::Transform mSensor2BaseTransf;  // Coordinates of the base frame in sensor frame
 
         // Zed object
         sl::InitParameters mZedParams;
@@ -423,6 +439,15 @@ namespace zed_wrapper {
         // Coordinate Changing indices and signs
         int mIdxX, mIdxY, mIdxZ;
         int mSignX, mSignY, mSignZ;
+
+        // Diagnostic
+        std::unique_ptr<sl_tools::CSmartMean> mElabPeriodMean_sec;
+        std::unique_ptr<sl_tools::CSmartMean> mGrabPeriodMean_usec;
+        std::unique_ptr<sl_tools::CSmartMean> mPcPeriodMean_usec;
+        std::unique_ptr<sl_tools::CSmartMean> mImuPeriodMean_usec;
+
+        diagnostic_updater::Updater mDiagUpdater; // Diagnostic Updater
+
     }; // class ZEDROSWrapperNodelet
 } // namespace
 
