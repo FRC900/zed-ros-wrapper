@@ -285,7 +285,6 @@ namespace zed_wrapper {
         set_pose(mInitialTrackPose[0], mInitialTrackPose[1], mInitialTrackPose[2],
                  mInitialTrackPose[3], mInitialTrackPose[4], mInitialTrackPose[5]);
 
-
         // Try to initialize the ZED
         if (!mSvoFilepath.empty()) {
             mZedParams.svo_input_filename = mSvoFilepath.c_str();
@@ -590,14 +589,14 @@ namespace zed_wrapper {
         mSrvSetInitPose = mNh.advertiseService("set_initial_pose", &ZEDWrapperNodelet::on_set_pose, this);
         mSrvResetOdometry = mNh.advertiseService("reset_odometry", &ZEDWrapperNodelet::on_reset_odometry, this);
         mSrvResetTracking = mNh.advertiseService("reset_tracking", &ZEDWrapperNodelet::on_reset_tracking, this);
+        mSrvSvoStartRecording = mNh.advertiseService("start_svo_recording", &ZEDWrapperNodelet::on_start_svo_recording, this);
+        mSrvSvoStopRecording = mNh.advertiseService("stop_svo_recording", &ZEDWrapperNodelet::on_stop_svo_recording, this);
 
         // Start Pointcloud thread
         mPcThread = std::thread(&ZEDWrapperNodelet::pointcloud_thread_func, this);
 
         // Start pool thread
         mDevicePollThread = std::thread(&ZEDWrapperNodelet::device_poll_thread_func, this);
-
-
     }
 
     void ZEDWrapperNodelet::checkResolFps() {
@@ -735,12 +734,11 @@ namespace zed_wrapper {
         } catch (tf2::TransformException& ex) {
             NODELET_WARN_THROTTLE(
                 10.0, "The tf from '%s' to '%s' does not seem to be available, "
-                "will assume it as identity!",
+                "will assume it as identity! Verify that the static transforms from URDF are correctly published",
                 mDepthFrameId.c_str(), mBaseFrameId.c_str());
             NODELET_DEBUG("Transform error: %s", ex.what());
             mSensor2BaseTransf.setIdentity();
         }
-
     }
 
     void ZEDWrapperNodelet::set_pose(float xt, float yt, float zt, float rr,
@@ -839,6 +837,8 @@ namespace zed_wrapper {
         mNhNs.getParam("floor_alignment", mFloorAlignment);
         mNhNs.getParam("init_odom_with_first_valid_pose", mInitOdomWithPose);
         NODELET_INFO_STREAM("Init Odometry with first valid pose data : " << (mInitOdomWithPose ? "ENABLED" : "DISABLED"));
+        mNhNs.getParam("two_d_mode", mTwoDMode);
+        mNhNs.getParam("fixed_z_value", mFixedZValue);
 
         if (mInitialTrackPose.size() != 6) {
             NODELET_WARN_STREAM("Invalid Initial Pose size (" << mInitialTrackPose.size()
@@ -862,6 +862,11 @@ namespace zed_wrapper {
         trackParams.enable_spatial_memory = mSpatialMemory;
         NODELET_INFO_STREAM("Spatial Memory : " << (trackParams.enable_spatial_memory ? "ENABLED" : "DISABLED"));
         trackParams.initial_world_transform = mInitialPoseSl;
+        NODELET_INFO_STREAM("Two D mode : " << (mTwoDMode ? "ENABLED" : "DISABLED"));
+
+        if (mTwoDMode) {
+            NODELET_INFO_STREAM("Fixed Z value : " << mFixedZValue);
+        }
 
 #if ((ZED_SDK_MAJOR_VERSION>2) || (ZED_SDK_MAJOR_VERSION==2 && ZED_SDK_MINOR_VERSION>=6))
         trackParams.set_floor_as_origin = mFloorAlignment;
@@ -901,7 +906,17 @@ namespace zed_wrapper {
         if (!mSpatialMemory && mPublishPoseCovariance) {
             for (size_t i = 0; i < odom.pose.covariance.size(); i++) {
                 // odom.pose.covariance[i] = static_cast<double>(slPose.pose_covariance[i]); // TODO USE THIS WHEN STEP BY STEP COVARIANCE WILL BE AVAILABLE IN CAMERA_FRAME
+
                 odom.pose.covariance[i] = static_cast<double>(mLastZedPose.pose_covariance[i]);
+
+                if (mTwoDMode) {
+                    if ((i >= 2 && i <= 4) ||
+                        (i >= 8 && i <= 10) ||
+                        (i >= 12 && i <= 29) ||
+                        (i >= 32 && i <= 34)) {
+                        odom.pose.covariance[i] = 1e-9; // Very low covariance if 2D mode
+                    }
+                }
             }
         }
 
@@ -964,6 +979,15 @@ namespace zed_wrapper {
                     for (size_t i = 0; i < poseCov.pose.covariance.size(); i++) {
                         // odom.pose.covariance[i] = static_cast<double>(slPose.pose_covariance[i]); // TODO USE THIS WHEN STEP BY STEP COVARIANCE WILL BE AVAILABLE IN CAMERA_FRAME
                         poseCov.pose.covariance[i] = static_cast<double>(mLastZedPose.pose_covariance[i]);
+
+                        if (mTwoDMode) {
+                            if ((i >= 2 && i <= 4) ||
+                                (i >= 8 && i <= 10) ||
+                                (i >= 12 && i <= 29) ||
+                                (i >= 32 && i <= 34)) {
+                                poseCov.pose.covariance[i] = 1e-9; // Very low covariance if 2D mode
+                            }
+                        }
                     }
                 }
 
@@ -1108,7 +1132,7 @@ namespace zed_wrapper {
         // https://github.com/ros/common_msgs/blob/jade-devel/sensor_msgs/include/sensor_msgs/point_cloud2_iterator.h
 
         int ptsCount = mMatWidth * mMatHeight;
-      
+
         mPointcloudMsg->header.stamp = mPointCloudTime;
 
         if (mPointcloudMsg->width != mMatWidth || mPointcloudMsg->height != mMatHeight) {
@@ -1659,6 +1683,8 @@ namespace zed_wrapper {
     void ZEDWrapperNodelet::device_poll_thread_func() {
         ros::Rate loop_rate(mCamFrameRate);
 
+        mRecording = false;
+
         mElabPeriodMean_sec.reset(new sl_tools::CSmartMean(mCamFrameRate));
         mGrabPeriodMean_usec.reset(new sl_tools::CSmartMean(mCamFrameRate));
         mPcPeriodMean_usec.reset(new sl_tools::CSmartMean(mCamFrameRate));
@@ -1673,6 +1699,8 @@ namespace zed_wrapper {
         mPrevFrameTimestamp = mFrameTimestamp;
 
         mTrackingActivated = false;
+        mRecording = false;
+
         // Get the parameters of the ZED images
         mCamWidth = mZed.getResolution().width;
         mCamHeight = mZed.getResolution().height;
@@ -1686,10 +1714,13 @@ namespace zed_wrapper {
                     mRightCamOptFrameId);
         fillCamInfo(mZed, mLeftCamInfoRawMsg, mRightCamInfoRawMsg, mLeftCamOptFrameId,
                     mRightCamOptFrameId, true);
-        mRgbCamInfoMsg = mDepthCamInfoMsg = mLeftCamInfoMsg; // the reference camera is
+
+        // the reference camera is
         // the Left one (next to the
         // ZED logo)
+        mRgbCamInfoMsg = mDepthCamInfoMsg = mLeftCamInfoMsg;
         mRgbCamInfoRawMsg = mLeftCamInfoRawMsg;
+
         sl::RuntimeParameters runParams;
         runParams.sensing_mode = static_cast<sl::SENSING_MODE>(mCamSensingMode);
         sl::Mat leftZEDMat, rightZEDMat, depthZEDMat, disparityZEDMat, confImgZEDMat, confMapZEDMat;
@@ -1726,23 +1757,22 @@ namespace zed_wrapper {
                 runParams.enable_point_cloud = true;
             }
 
-            // Run the loop only if there is some subscribers
-            if (mGrabActive) {
-                bool startTracking = (mDepthStabilization || poseSubnumber > 0 || poseCovSubnumber > 0 ||
-                                      odomSubnumber > 0 || cloudSubnumber > 0 || depthSubnumber > 0 || pathSubNumber > 0);
+            // Run the loop only if there is some subscribers or SVO recording is active
+            if (mGrabActive || mRecording) {
+                bool computeTracking = (mDepthStabilization || poseSubnumber > 0 || poseCovSubnumber > 0 ||
+                                        odomSubnumber > 0 || pathSubNumber > 0);
 
                 // Detect if one of the subscriber need to have the depth information
                 mComputeDepth = mCamQuality != sl::DEPTH_MODE_NONE && ((depthSubnumber + disparitySubnumber + cloudSubnumber +
                                 poseSubnumber + poseCovSubnumber + odomSubnumber + confImgSubnumber +
                                 confMapSubnumber) > 0);
 
-                if ((startTracking) && !mTrackingActivated && mComputeDepth) { // Start the tracking
+                if ((computeTracking) && !mTrackingActivated && (mCamQuality != sl::DEPTH_MODE_NONE)) { // Start the tracking
                     start_tracking();
-                } else if (!mDepthStabilization && poseSubnumber == 0 && poseCovSubnumber == 0 &&
-                           odomSubnumber == 0 &&
-                           mTrackingActivated) { // Stop the tracking
+                } else if (!computeTracking && mTrackingActivated) { // Stop the tracking
                     mZed.disableTracking();
                     mTrackingActivated = false;
+                    NODELET_INFO("Tracking DISABLED");
                 }
 
                 if (mComputeDepth) {
@@ -1818,10 +1848,10 @@ namespace zed_wrapper {
 
                         mTrackingActivated = false;
 
-                        startTracking = mDepthStabilization || poseSubnumber > 0 || poseCovSubnumber > 0 ||
-                                        odomSubnumber > 0;
+                        computeTracking = mDepthStabilization || poseSubnumber > 0 || poseCovSubnumber > 0 ||
+                                          odomSubnumber > 0;
 
-                        if (startTracking) {  // Start the tracking
+                        if (computeTracking) {  // Start the tracking
                             start_tracking();
                         }
                     }
@@ -1831,6 +1861,22 @@ namespace zed_wrapper {
                     continue;
                 }
 
+                // SVO recording
+                mRecMutex.lock();
+
+                if (mRecording) {
+                    mRecState = mZed.record();
+
+                    if (!mRecState.status) {
+                        ROS_ERROR_THROTTLE(1.0, "Error saving frame to SVO");
+                    }
+
+                    mDiagUpdater.force_update();
+                }
+
+                mRecMutex.unlock();
+
+                // Timestamp
                 mPrevFrameTimestamp = mFrameTimestamp;
 
                 // Publish freq calculation
@@ -2041,8 +2087,7 @@ namespace zed_wrapper {
                 mCamDataMutex.unlock();
 
                 // Publish the odometry if someone has subscribed to
-                if (poseSubnumber > 0 || poseCovSubnumber > 0 || odomSubnumber > 0 || cloudSubnumber > 0 ||
-                    depthSubnumber > 0 || imuSubnumber > 0 || imuRawsubnumber > 0 || pathSubNumber > 0) {
+                if (computeTracking) {
                     if (!mInitOdomWithPose) {
                         sl::Pose deltaOdom;
                         mTrackingStatus = mZed.getPosition(deltaOdom, sl::REFERENCE_FRAME_CAMERA);
@@ -2077,6 +2122,20 @@ namespace zed_wrapper {
                             // Propagate Odom transform in time
                             mOdom2BaseTransf = mOdom2BaseTransf * deltaOdomTf_base;
 
+                            if (mTwoDMode) {
+                                tf2::Vector3 tr_2d = mOdom2BaseTransf.getOrigin();
+                                tr_2d.setZ(mFixedZValue);
+                                mOdom2BaseTransf.setOrigin(tr_2d);
+
+                                double roll, pitch, yaw;
+                                tf2::Matrix3x3(mOdom2BaseTransf.getRotation()).getRPY(roll, pitch, yaw);
+
+                                tf2::Quaternion quat_2d;
+                                quat_2d.setRPY(0.0, 0.0, yaw);
+
+                                mOdom2BaseTransf.setRotation(quat_2d);
+                            }
+
 #if 0 //#ifndef NDEBUG // Enable for TF checking
                             double roll, pitch, yaw;
                             tf2::Matrix3x3(mOdom2BaseTransf.getRotation()).getRPY(roll, pitch, yaw);
@@ -2098,9 +2157,7 @@ namespace zed_wrapper {
                 }
 
                 // Publish the zed camera pose if someone has subscribed to
-                if (poseSubnumber > 0 || odomSubnumber > 0 || poseCovSubnumber > 0 || cloudSubnumber > 0 ||
-                    depthSubnumber > 0 || imuSubnumber > 0 || imuRawsubnumber > 0 || pathSubNumber > 0) {
-
+                if (computeTracking) {
                     static sl::TRACKING_STATE oldStatus;
                     mTrackingStatus = mZed.getPosition(mLastZedPose, sl::REFERENCE_FRAME_WORLD);
 
@@ -2135,6 +2192,20 @@ namespace zed_wrapper {
                         tf2::fromMsg(map2sensTransf, map_to_sens_transf);
 
                         mMap2BaseTransf = map_to_sens_transf * mSensor2BaseTransf; // Base position in map frame
+
+                        if (mTwoDMode) {
+                            tf2::Vector3 tr_2d = mMap2BaseTransf.getOrigin();
+                            tr_2d.setZ(mFixedZValue);
+                            mMap2BaseTransf.setOrigin(tr_2d);
+
+                            double roll, pitch, yaw;
+                            tf2::Matrix3x3(mMap2BaseTransf.getRotation()).getRPY(roll, pitch, yaw);
+
+                            tf2::Quaternion quat_2d;
+                            quat_2d.setRPY(0.0, 0.0, yaw);
+
+                            mMap2BaseTransf.setRotation(quat_2d);
+                        }
 
 #if 0 //#ifndef NDEBUG // Enable for TF checking
                         double roll, pitch, yaw;
@@ -2347,9 +2418,111 @@ namespace zed_wrapper {
             } else {
                 stat.add("IMU", "Topics not subscribed");
             }
+
+            if (mRecording) {
+                if (!mRecState.status) {
+                    if (mGrabActive) {
+                        stat.add("SVO Recording", "ERROR");
+                        stat.summary(diagnostic_msgs::DiagnosticStatus::WARN,
+                                     "Error adding frames to SVO file while recording. Check free disk space");
+                    } else {
+                        stat.add("SVO Recording", "WAITING");
+                    }
+                } else {
+                    stat.add("SVO Recording", "ACTIVE");
+                    stat.addf("SVO compression time", "%g msec", mRecState.average_compression_time);
+                    stat.addf("SVO compression ratio", "%.1f%%", mRecState.average_compression_ratio);
+                }
+            } else {
+                stat.add("SVO Recording", "NOT ACTIVE");
+            }
         } else {
             stat.summary(diagnostic_msgs::DiagnosticStatus::ERROR, sl::toString(mConnStatus).c_str());
         }
+    }
 
+    bool ZEDWrapperNodelet::on_start_svo_recording(zed_wrapper::start_svo_recording::Request& req,
+            zed_wrapper::start_svo_recording::Response& res) {
+        std::lock_guard<std::mutex> lock(mRecMutex);
+
+        if (mRecording) {
+            res.result = false;
+            res.info = "Recording was just active";
+            return false;
+        }
+
+        // Check filename
+        if (req.svo_filename.empty()) {
+            req.svo_filename = "zed.svo";
+        }
+
+        sl::ERROR_CODE err;
+        sl::SVO_COMPRESSION_MODE compression = sl::SVO_COMPRESSION_MODE_RAW;
+#if ((ZED_SDK_MAJOR_VERSION>2) || (ZED_SDK_MAJOR_VERSION==2 && ZED_SDK_MINOR_VERSION>=6))
+        {
+            compression = sl::SVO_COMPRESSION_MODE_HEVC;
+            err = mZed.enableRecording(req.svo_filename.c_str(), compression); // H265 Compression?
+
+            if (err == sl::ERROR_CODE_SVO_UNSUPPORTED_COMPRESSION) {
+                ROS_DEBUG_STREAM(sl::toString(compression).c_str() << "not available. Trying " << sl::toString(
+                                     sl::SVO_COMPRESSION_MODE_AVCHD).c_str());
+                compression = sl::SVO_COMPRESSION_MODE_AVCHD;
+                err = mZed.enableRecording(req.svo_filename.c_str(), compression);  // H264 Compression?
+
+                if (err == sl::ERROR_CODE_SVO_UNSUPPORTED_COMPRESSION) {
+                    ROS_DEBUG_STREAM(sl::toString(compression).c_str() << "not available. Trying " << sl::toString(
+                                         sl::SVO_COMPRESSION_MODE_LOSSY).c_str());
+                    compression = sl::SVO_COMPRESSION_MODE_LOSSY;
+                    err = mZed.enableRecording(req.svo_filename.c_str(), compression);  // JPEG Compression?
+                }
+            }
+        }
+
+        if (err == sl::ERROR_CODE_SVO_UNSUPPORTED_COMPRESSION) {
+            compression = sl::SVO_COMPRESSION_MODE_RAW;
+            err = mZed.enableRecording(req.svo_filename.c_str(), compression);
+        }
+
+#else
+        compression = sl::SVO_COMPRESSION_MODE_LOSSY;
+        err = mZed.enableRecording(req.svo_filename.c_str(), compression);  // JPEG Compression?
+#endif
+
+        if (err != sl::SUCCESS) {
+            res.result = false;
+            res.info = sl::toString(err).c_str();
+            mRecording = false;
+            return false;
+        }
+
+        mRecording = true;
+        res.info = "Recording started (";
+        res.info += sl::toString(compression).c_str();
+        res.info += ")";
+        res.result = true;
+
+        ROS_INFO_STREAM("SVO recording STARTED: " << req.svo_filename << " (" << sl::toString(compression).c_str() << ")");
+
+        return true;
+    }
+
+    bool ZEDWrapperNodelet::on_stop_svo_recording(zed_wrapper::stop_svo_recording::Request& req,
+            zed_wrapper::stop_svo_recording::Response& res) {
+        std::lock_guard<std::mutex> lock(mRecMutex);
+
+        if (!mRecording) {
+            res.done = false;
+            res.info = "Recording was not active";
+            return false;
+        }
+
+        mZed.disableRecording();
+        mRecording = false;
+        res.info = "Recording stopped";
+        res.done = true;
+
+        ROS_INFO_STREAM("SVO recording STOPPED");
+
+        return true;
     }
 } // namespace
