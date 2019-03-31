@@ -70,6 +70,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <arg name="right_camera_optical_frame"    default="zed_right_camera_optical_frame" />
     <arg name="imu_frame"                     default="imu_link" /> <!-- only used with ZED M -->
 
+	<arg name="pose_smoothing"                default="false" />
+	<arg name="floor_alignment"               default="false" />
     <arg name="two_d_mode"                    default="false" /> <!-- if true the Z value will be fixed to "fixed_z_value", roll and pitch to zero -->
     <arg name="fixed_z_value"                 default="0.0" />
 
@@ -139,7 +141,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         <param name="depth_stabilization"   value="1" />
         <param name="pose_smoothing"        value="false" />
         <param name="spatial_memory"        value="false" />
-        <param name="floor_alignment"       value="false" />
+        <param name="floor_alignment"       value="$(arg floor_alignment)" />
         <param name="two_d_mode"            value="$(arg two_d_mode)" />
         <param name="fixed_z_value"         value="$(arg fixed_z_value)" />
 
