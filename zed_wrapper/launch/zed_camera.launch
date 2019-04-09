@@ -21,7 +21,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <arg name="svo_file"              default="" /><!-- <arg name="svo_file" default="path/to/svo/file.svo"> -->
     <arg name="zed_id"                default="0" />
     <!-- If a ZED SN is given, zed_id is ignored and the wrapper will specifically look for the ZED with the corresponding serial number -->
-    <arg name="serial_number"         default="0" />     
+    <arg name="serial_number"         default="0" />
     <arg name="verbose"               default="true" />
 
     <arg name="resolution"            default="2" /> <!--0=RESOLUTION_HD2K, 1=RESOLUTION_HD1080, 2=RESOLUTION_HD720, 3=RESOLUTION_VGA -->
@@ -80,6 +80,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <!-- Publish urdf zed -->
     <arg name="publish_urdf"                  default="true" />
 
+    <!-- to flip or not to flip -->
     <arg name="camera_flip"                   default="false" />
     <arg name="rgb_topic"                     default="rgb/image_rect_color" />
     <arg name="rgb_info_topic"                default="rgb/camera_info" />
@@ -97,7 +98,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         <!-- flip camera -->
         <param name="camera_flip"           value="$(arg camera_flip)" />
 
-        <!-- Configuration frame camera -->    
+        <!-- Configuration frame camera -->
         <param name="pose_frame"                    value="$(arg pose_frame)" />
         <param name="odometry_frame"                value="$(arg odometry_frame)" />
         <param name="base_frame"                    value="$(arg base_frame)" />
@@ -106,7 +107,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         <param name="right_camera_frame"            value="$(arg right_camera_frame)" />
         <param name="right_camera_optical_frame"    value="$(arg right_camera_optical_frame)" />
         <param name="imu_frame"                     value="$(arg imu_frame)" />
-    
+
         <!-- SVO file path -->
         <param name="svo_filepath"          value="$(arg svo_file)" />
 
@@ -166,7 +167,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         <param name="depth_topic"               value="$(arg depth_topic)" />
         <param name="depth_cam_info_topic"      value="$(arg depth_cam_info_topic)" />
 
-        <param name="point_cloud_topic"         value="point_cloud/cloud_registered" />        
+        <param name="point_cloud_topic"         value="point_cloud/cloud_registered" />
 
         <param name="disparity_topic"           value="disparity/disparity_image" />
         <param name="confidence_img_topic"      value="confidence/confidence_image" />
@@ -175,7 +176,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         <param name="pose_topic"                value="pose" />
         <param name="odometry_topic"            value="odom" />
 
-        <param name="init_odom_with_first_valid_pose"        value="true" />
+        <param name="init_odom_with_first_valid_pose"        value="true" /> <!-- only used with ZED mini -->
 
         <param name="imu_topic"                 value="imu/data" /> <!-- only used with ZED M -->
         <param name="imu_topic_raw"             value="imu/data_raw" /> <!-- only used with ZED M -->
@@ -187,7 +188,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         <param name="path_max_count"            value="-1" /> <!-- use "-1" for no limits -->
 
         <param name="publish_pose_covariance"   value="false" />
-
     </node>
 
     <!-- ROS URDF description of the ZED -->
