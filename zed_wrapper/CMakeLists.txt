@@ -25,7 +25,7 @@ endfunction(checkPackage)
 # if the ZED SDK is missing
 unset(BUILD_ME CACHE)
 if (NOT DEFINED CMAKE_TOOLCHAIN_FILE)
-  find_package(ZED 2.3)
+  find_package(ZED 2.7)
   if (ZED_FOUND)
     set (BUILD_ME True)
   endif()
@@ -37,21 +37,21 @@ if (BUILD_ME)
 		SET(CUDA_USE_STATIC_CUDA_RUNTIME OFF)
 	endif()
 
-	find_package(OpenCV 3 COMPONENTS core highgui imgproc)
-	checkPackage("OPENCV_CORE" "OpenCV core not found, install it from the tutorial at:\n https://www.stereolabs.com/documentation/overview/getting-started/getting-started.html")
-	checkPackage("OPENCV_HIGHGUI" "OpenCV highgui not found, install it from the tutorial at:\n https://www.stereolabs.com/documentation/overview/getting-started/getting-started.html")
-	checkPackage("OPENCV_IMGPROC" "OpenCV imgproc not found, install it from the tutorial at:\n https://www.stereolabs.com/documentation/overview/getting-started/getting-started.html")
+	#find_package(OpenCV 3 COMPONENTS core highgui imgproc)
+	#checkPackage("OPENCV_CORE" "OpenCV core not found, install it from the tutorial at:\n https://www.stereolabs.com/documentation/overview/getting-started/getting-started.html")
+	#checkPackage("OPENCV_HIGHGUI" "OpenCV highgui not found, install it from the tutorial at:\n https://www.stereolabs.com/documentation/overview/getting-started/getting-started.html")
+	#checkPackage("OPENCV_IMGPROC" "OpenCV imgproc not found, install it from the tutorial at:\n https://www.stereolabs.com/documentation/overview/getting-started/getting-started.html")
 
-	find_package(CUDA)
-	checkPackage("CUDA" "CUDA not found, install it from:\n https://developer.nvidia.com/cuda-downloads")
+	#find_package(CUDA)
+	#checkPackage("CUDA" "CUDA not found, install it from:\n https://developer.nvidia.com/cuda-downloads")
 
-	find_package(OpenMP)
-	checkPackage("OpenMP" "OpenMP not found, please install it to improve performances: 'sudo apt install libomp-dev'")
-	if (OPENMP_FOUND)
-		set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-		set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-		set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
-	endif()
+	#find_package(OpenMP)
+	#checkPackage("OpenMP" "OpenMP not found, please install it to improve performances: 'sudo apt install libomp-dev'")
+	#if (OPENMP_FOUND)
+	#	set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+	#	set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+	#	set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+	#endif()
 
 	find_package(catkin COMPONENTS
 	  image_transport
@@ -65,6 +65,7 @@ if (BUILD_ME)
 	  tf2_geometry_msgs
 	  message_generation
 	  diagnostic_updater
+	  roslint
 	)
 
 	checkPackage("image_transport" "")
@@ -79,11 +80,15 @@ if (BUILD_ME)
 	checkPackage("message_generation" "")
 
 	add_service_files( FILES
-		set_initial_pose.srv
+		set_pose.srv
 		reset_odometry.srv
 		reset_tracking.srv
 		start_svo_recording.srv
 		stop_svo_recording.srv
+		start_remote_stream.srv
+		stop_remote_stream.srv
+		set_led_status.srv
+		toggle_led.srv
 	  )
 
 	generate_messages()
@@ -157,6 +162,9 @@ if (BUILD_ME)
 # a dummy_target so qtcreator have access to all files
 	FILE(GLOB_RECURSE all_files ${CMAKE_SOURCE_DIR}/*)
 	add_custom_target(all_files_${PROJECT_NAME} SOURCES ${all_files})
+
+roslint_cpp()
+
 
 ###############################################################################
 # INSTALL
