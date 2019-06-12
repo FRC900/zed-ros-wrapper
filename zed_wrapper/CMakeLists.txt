@@ -37,22 +37,6 @@ if (BUILD_ME)
 		SET(CUDA_USE_STATIC_CUDA_RUNTIME OFF)
 	endif()
 
-	#find_package(OpenCV 3 COMPONENTS core highgui imgproc)
-	#checkPackage("OPENCV_CORE" "OpenCV core not found, install it from the tutorial at:\n https://www.stereolabs.com/documentation/overview/getting-started/getting-started.html")
-	#checkPackage("OPENCV_HIGHGUI" "OpenCV highgui not found, install it from the tutorial at:\n https://www.stereolabs.com/documentation/overview/getting-started/getting-started.html")
-	#checkPackage("OPENCV_IMGPROC" "OpenCV imgproc not found, install it from the tutorial at:\n https://www.stereolabs.com/documentation/overview/getting-started/getting-started.html")
-
-	#find_package(CUDA)
-	#checkPackage("CUDA" "CUDA not found, install it from:\n https://developer.nvidia.com/cuda-downloads")
-
-	#find_package(OpenMP)
-	#checkPackage("OpenMP" "OpenMP not found, please install it to improve performances: 'sudo apt install libomp-dev'")
-	#if (OPENMP_FOUND)
-	#	set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-	#	set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-	#	set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
-	#endif()
-
 	find_package(catkin COMPONENTS
 	  image_transport
 	  roscpp
@@ -110,20 +94,20 @@ if (BUILD_ME)
 		message_runtime
 	)
 
-###############################################################################
-# SOURCES
+	###############################################################################
+	# SOURCES
 
 	set(TOOLS_SRC
 		${CMAKE_CURRENT_SOURCE_DIR}/src/tools/src/sl_tools.cpp)
 	set(NODE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/zed_wrapper_node.cpp)
 	set(NODELET_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/nodelet/src/zed_wrapper_nodelet.cpp)
 
-###############################################################################
+	###############################################################################
 
-###############################################################################
-# INCLUDES
+	###############################################################################
+	# INCLUDES
 
-# Specify locations of header files.
+	# Specify locations of header files.
 	include_directories(
 			${catkin_INCLUDE_DIRS}
 			${CUDA_INCLUDE_DIRS}
@@ -135,11 +119,10 @@ if (BUILD_ME)
 	link_directories(${ZED_LIBRARY_DIR})
 	link_directories(${CUDA_LIBRARY_DIRS})
 
-###############################################################################
+	###############################################################################
 
-###############################################################################
-# EXECUTABLE
-
+	###############################################################################
+	# EXECUTABLE
 	if(NOT DEFINED CUDA_NPP_LIBRARIES_ZED)
 		#To deal with cuda 9 nppi libs and previous versions of ZED SDK
 		set(CUDA_NPP_LIBRARIES_ZED ${CUDA_npp_LIBRARY} ${CUDA_npps_LIBRARY} ${CUDA_nppi_LIBRARY})   
@@ -157,29 +140,31 @@ if (BUILD_ME)
 	add_executable(zed_wrapper_node ${NODE_SRC})
 	target_link_libraries(zed_wrapper_node ZEDWrapper ${LINK_LIBRARIES})
 	add_dependencies(zed_wrapper_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
-###############################################################################
-#Add all files in subdirectories of the project in
-# a dummy_target so qtcreator have access to all files
+
+	###############################################################################
+	#Add all files in subdirectories of the project in
+	# a dummy_target so qtcreator have access to all files
 	FILE(GLOB_RECURSE all_files ${CMAKE_SOURCE_DIR}/*)
 	add_custom_target(all_files_${PROJECT_NAME} SOURCES ${all_files})
 
-roslint_cpp()
+	roslint_cpp()
 
-
-###############################################################################
-# INSTALL
-
+	###############################################################################
+	# INSTALL
 	install(TARGETS
 	  ZEDWrapper
 	  zed_wrapper_node
 	  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 	  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 	  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
 	install(FILES
 	  nodelet_plugins.xml
 	  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+
 	install(DIRECTORY
 	  launch
+	  params
 	  urdf
 	  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
