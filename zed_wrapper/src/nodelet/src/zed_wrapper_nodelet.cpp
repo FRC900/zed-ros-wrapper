@@ -1717,10 +1717,10 @@ namespace zed_wrapper {
         sl::CalibrationParameters zedParam;
 
         if (rawParam) {
-            zedParam = mZed.getCameraInformation(sl::Resolution(mMatWidth, mMatHeight))
+            zedParam = zed.getCameraInformation(sl::Resolution(mMatWidth, mMatHeight))
                        .calibration_parameters_raw;
         } else {
-            zedParam = mZed.getCameraInformation(sl::Resolution(mMatWidth, mMatHeight))
+            zedParam = zed.getCameraInformation(sl::Resolution(mMatWidth, mMatHeight))
                        .calibration_parameters;
         }
 
