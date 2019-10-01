@@ -46,6 +46,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <arg name="cam_pitch"             default="0.0" />
     <arg name="cam_yaw"               default="0.0" />
 
+	<arg name="common_params_file"    default="$(find zed_wrapper)/params/common.yaml" />
+	<arg name="camera_params_file"    default="$(find zed_wrapper)/params/$(arg camera_model).yaml" />
+
     <!-- ROS URDF description of the ZED -->
     <group if="$(arg publish_urdf)">
         <param name="$(arg camera_name)_description"
@@ -67,8 +70,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     </group>
 
     <node name="$(arg node_name)" pkg="zed_wrapper" type="zed_wrapper_node" output="screen" required="true"><!-- launch-prefix="valgrind" -->
-        <rosparam file="$(find zed_wrapper)/params/common.yaml" command="load" />
-        <rosparam file="$(find zed_wrapper)/params/$(arg camera_model).yaml" command="load" />
+        <rosparam file="$(arg common_params_file)" command="load" />
+        <rosparam file="$(arg camera_params_file)" command="load" />
 
         <!-- Camera name -->
         <param name="general/camera_name"               value="$(arg camera_name)" />
