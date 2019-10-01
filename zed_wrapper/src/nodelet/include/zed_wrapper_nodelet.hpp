@@ -482,15 +482,30 @@ namespace zed_wrapper {
 
         // Dynamic Parameters
         int mCamConfidence;
-        int mCamExposure;
-        int mCamGain;
         double mCamMatResizeFactor;
         double mCamMaxDepth;
-        bool mCamAutoExposure;
         double mPointCloudFreq;
-
-        // flags
+        int mCamGain;
+        int mCamExposure;
+        bool mCamAutoExposure;
         bool mTriggerAutoExposure;
+        int mCamBrightness;
+        bool mCamAutoBrightness;
+        bool mTriggerAutoBrightness;
+        int mCamContrast;
+        bool mCamAutoContrast;
+        bool mTriggerAutoContrast;
+        int mCamHue;
+        bool mCamAutoHue;
+        bool mTriggerAutoHue;
+        int mCamSaturation;
+        bool mCamAutoSaturation;
+        bool mTriggerAutoSaturation;
+        int mCamWhitebalance;
+        bool mCamAutoWhitebalance;
+        bool mTriggerAutoWhitebalance;
+
+		// flags
         bool mComputeDepth;
         bool mOpenniDepthMode; // 16 bit UC data in mm else 32F in m, for more info -> http://www.ros.org/reps/rep-0118.html
         bool mPoseSmoothing = false; // Always disabled. Enable only for AR/VR applications

@@ -75,6 +75,20 @@ namespace zed_wrapper {
         }
 
 #endif
+
+        mCamAutoExposure = true;
+        mTriggerAutoExposure = true;
+        mCamAutoBrightness = true;
+        mTriggerAutoBrightness = true;
+        mCamAutoContrast = true;
+        mTriggerAutoContrast = true;
+        mCamAutoHue = true;
+        mTriggerAutoHue = true;
+        mCamAutoSaturation = true;
+        mTriggerAutoSaturation = true;
+        mCamAutoWhitebalance = true;
+        mTriggerAutoWhitebalance = true;
+
         std::string ver = sl_tools::getSDKVersion(mVerMajor, mVerMinor, mVerSubMinor);
         NODELET_INFO_STREAM("SDK version : " << ver);
 
@@ -688,7 +702,6 @@ namespace zed_wrapper {
         // ----> Dynamic
         mNhNs.getParam("mat_resize_factor", mCamMatResizeFactor);
 
-
         if (mCamMatResizeFactor < 0.1) {
             mCamMatResizeFactor = 0.1;
             NODELET_WARN_STREAM("Minimum allowed values for 'mat_resize_factor' is 0.1");
@@ -711,15 +724,60 @@ namespace zed_wrapper {
         NODELET_INFO_STREAM(" * [DYN] gain\t\t\t-> " << mCamGain);
         mNhNs.getParam("auto_exposure", mCamAutoExposure);
         NODELET_INFO_STREAM(" * [DYN] auto_exposure\t\t-> " << (mCamAutoExposure ? "ENABLED" : "DISABLED"));
-        mNhNs.getParam("point_cloud_freq", mPointCloudFreq);
-        NODELET_INFO_STREAM(" * [DYN] point_cloud_freq\t-> " << mPointCloudFreq << " Hz");
 
         if (mCamAutoExposure) {
             mTriggerAutoExposure = true;
         }
 
-        // <---- Dynamic
+        mNhNs.getParam("brightness", mCamBrightness);
+        NODELET_INFO_STREAM(" * [DYN] brightness\t\t-> " << mCamBrightness);
+        mNhNs.getParam("auto_brightness", mCamAutoBrightness);
+        NODELET_INFO_STREAM(" * [DYN] auto_brightness\t\t-> " << (mCamAutoBrightness? "ENABLED" : "DISABLED"));
 
+        if (mCamAutoBrightness) {
+            mTriggerAutoBrightness = true;
+        }
+
+        mNhNs.getParam("contrast", mCamContrast);
+        NODELET_INFO_STREAM(" * [DYN] contrast\t\t-> " << mCamContrast);
+        mNhNs.getParam("auto_contrast", mCamAutoContrast);
+        NODELET_INFO_STREAM(" * [DYN] auto_contrast\t\t-> " << (mCamAutoContrast? "ENABLED" : "DISABLED"));
+
+        if (mCamAutoContrast) {
+            mTriggerAutoContrast = true;
+        }
+
+        mNhNs.getParam("saturation", mCamSaturation);
+        NODELET_INFO_STREAM(" * [DYN] saturation\t\t-> " << mCamSaturation);
+        mNhNs.getParam("auto_saturation", mCamAutoSaturation);
+        NODELET_INFO_STREAM(" * [DYN] auto_saturation\t\t-> " << (mCamAutoSaturation? "ENABLED" : "DISABLED"));
+
+        if (mCamAutoSaturation) {
+            mTriggerAutoSaturation = true;
+        }
+
+        mNhNs.getParam("hue", mCamHue);
+        NODELET_INFO_STREAM(" * [DYN] hue\t\t-> " << mCamHue);
+        mNhNs.getParam("auto_hue", mCamAutoHue);
+        NODELET_INFO_STREAM(" * [DYN] auto_hue\t\t-> " << (mCamAutoHue? "ENABLED" : "DISABLED"));
+
+        if (mCamAutoHue) {
+            mTriggerAutoHue = true;
+        }
+
+        mNhNs.getParam("whitebalance", mCamWhitebalance);
+        NODELET_INFO_STREAM(" * [DYN] whitebalance\t\t-> " << mCamWhitebalance);
+        mNhNs.getParam("auto_whitebalance", mCamAutoWhitebalance);
+        NODELET_INFO_STREAM(" * [DYN] auto_brightness\t\t-> " << (mCamAutoWhitebalance? "ENABLED" : "DISABLED"));
+
+        if (mCamAutoWhitebalance) {
+            mTriggerAutoWhitebalance = true;
+        }
+
+        mNhNs.getParam("point_cloud_freq", mPointCloudFreq);
+        NODELET_INFO_STREAM(" * [DYN] point_cloud_freq\t-> " << mPointCloudFreq << " Hz");
+
+        // <---- Dynamic
     }
 
     void ZEDWrapperNodelet::checkResolFps() {
@@ -1773,7 +1831,6 @@ namespace zed_wrapper {
             mCamMaxDepth = config.max_depth;
             NODELET_INFO("Reconfigure max depth : %g", mCamMaxDepth);
             break;
-
         case 3:
             mPointCloudFreq = config.point_cloud_freq;
             NODELET_INFO("Reconfigure point cloud frequency : %g", mPointCloudFreq);
@@ -1798,6 +1855,70 @@ namespace zed_wrapper {
         case 6:
             mCamExposure = config.exposure;
             NODELET_INFO("Reconfigure exposure : %d", mCamExposure);
+            break;
+
+        case 7:
+            mCamAutoBrightness = config.auto_brightness;
+            if (mCamAutoBrightness) {
+                mTriggerAutoBrightness = true;
+            }
+            NODELET_INFO("Reconfigure auto control of brightness : %s", mCamAutoBrightness ? "Enable" : "Disable");
+            break;
+
+        case 8:
+            mCamBrightness = config.brightness;
+            NODELET_INFO("Reconfigure brightness : %d", mCamBrightness);
+            break;
+
+        case 9:
+            mCamAutoContrast = config.auto_contrast;
+            if (mCamAutoContrast) {
+                mTriggerAutoContrast = true;
+            }
+            NODELET_INFO("Reconfigure auto control of contrast : %s", mCamAutoContrast ? "Enable" : "Disable");
+            break;
+
+        case 10:
+            mCamContrast = config.contrast;
+            NODELET_INFO("Reconfigure contrast : %d", mCamContrast);
+            break;
+
+        case 11:
+            mCamAutoHue = config.auto_hue;
+            if (mCamAutoHue) {
+                mTriggerAutoHue = true;
+            }
+            NODELET_INFO("Reconfigure auto control of hue: %s", mCamAutoHue ? "Enable" : "Disable");
+            break;
+
+        case 12:
+            mCamHue = config.hue;
+            NODELET_INFO("Reconfigure hue : %d", mCamHue);
+            break;
+
+        case 13:
+            mCamAutoSaturation = config.auto_saturation;
+            if (mCamAutoSaturation)
+                mTriggerAutoSaturation = true;
+            NODELET_INFO("Reconfigure auto control of saturation : %s", mCamAutoSaturation ? "Enable" : "Disable");
+            break;
+
+        case 14:
+            mCamSaturation = config.saturation;
+            NODELET_INFO("Reconfigure saturation : %d", mCamSaturation);
+            break;
+
+        case 15:
+            mCamAutoWhitebalance = config.auto_whitebalance;
+            if (mCamAutoWhitebalance) {
+                mTriggerAutoWhitebalance = true;
+            }
+            NODELET_INFO("Reconfigure auto control of whitebalance : %s", mCamAutoWhitebalance ? "Enable" : "Disable");
+            break;
+
+        case 16:
+            mCamWhitebalance = config.whitebalance;
+            NODELET_INFO("Reconfigure whitebalance : %d", mCamWhitebalance);
             break;
         }
     }
@@ -2313,6 +2434,72 @@ namespace zed_wrapper {
                     if (actual_gain != mCamGain) {
                         mZed.setCameraSettings(sl::CAMERA_SETTINGS_GAIN, mCamGain);
                     }
+                }
+
+
+                if (mCamAutoBrightness) {
+                    // getCameraSettings() can't check status of auto brightness
+                    // triggerAutoBrightness is used to execute setCameraSettings() only once
+                    if (mTriggerAutoBrightness) {
+                        mZed.setCameraSettings(sl::CAMERA_SETTINGS_BRIGHTNESS, 0, true);
+                        mTriggerAutoBrightness = false;
+                    }
+                } else {
+                    int actual_brightness = mZed.getCameraSettings(sl::CAMERA_SETTINGS_BRIGHTNESS);
+                    if (actual_brightness != mCamBrightness)
+                        mZed.setCameraSettings(sl::CAMERA_SETTINGS_BRIGHTNESS, mCamBrightness);
+                }
+
+                if (mCamAutoContrast) {
+                    // getCameraSettings() can't check status of auto contrast
+                    // triggerAutoContrast is used to execute setCameraSettings() only once
+                    if (mTriggerAutoContrast) {
+                        mZed.setCameraSettings(sl::CAMERA_SETTINGS_CONTRAST, 0, true);
+                        mTriggerAutoContrast = false;
+                    }
+                } else {
+                    int actual_contrast = mZed.getCameraSettings(sl::CAMERA_SETTINGS_CONTRAST);
+                    if (actual_contrast != mCamContrast)
+                        mZed.setCameraSettings(sl::CAMERA_SETTINGS_CONTRAST, mCamContrast);
+                }
+
+                if (mCamAutoHue) {
+                    // getCameraSettings() can't check status of auto hue
+                    // triggerAutoHue is used to execute setCameraSettings() only once
+                    if (mTriggerAutoHue) {
+                        mZed.setCameraSettings(sl::CAMERA_SETTINGS_HUE, 0, true);
+                        mTriggerAutoHue = false;
+                    }
+                } else {
+                    int actual_hue = mZed.getCameraSettings(sl::CAMERA_SETTINGS_HUE);
+                    if (actual_hue != mCamHue)
+                        mZed.setCameraSettings(sl::CAMERA_SETTINGS_HUE, mCamHue);
+                }
+
+                if (mCamAutoSaturation) {
+                    // getCameraSettings() can't check status of auto saturation
+                    // triggerAutoSaturation is used to execute setCameraSettings() only once
+                    if (mTriggerAutoSaturation) {
+                        mZed.setCameraSettings(sl::CAMERA_SETTINGS_SATURATION, 0, true);
+                        mTriggerAutoSaturation = false;
+                    }
+                } else {
+                    int actual_saturation = mZed.getCameraSettings(sl::CAMERA_SETTINGS_SATURATION);
+                    if (actual_saturation != mCamSaturation)
+                        mZed.setCameraSettings(sl::CAMERA_SETTINGS_SATURATION, mCamSaturation);
+                }
+
+                if (mCamAutoWhitebalance) {
+                    // getCameraSettings() can't check status of auto whitebalance
+                    // mTriggerAutoWhitebalance is used to execute setCameraSettings() only once
+                    if (mTriggerAutoWhitebalance) {
+                        mZed.setCameraSettings(sl::CAMERA_SETTINGS_WHITEBALANCE, 0, true);
+                        mTriggerAutoWhitebalance = false;
+                    }
+                } else {
+                    int actual_whitebalance = mZed.getCameraSettings(sl::CAMERA_SETTINGS_WHITEBALANCE);
+                    if (actual_whitebalance != mCamWhitebalance)
+                        mZed.setCameraSettings(sl::CAMERA_SETTINGS_WHITEBALANCE, mCamWhitebalance * 100);
                 }
 
                 mCamDataMutex.lock();
