@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.8.7)
 
 project(zed_wrapper)
 
+include (../../cmake_modules/CMakeOpt.cmake)
+
 # if CMAKE_BUILD_TYPE is not specified, take 'Release' as default
 IF(NOT CMAKE_BUILD_TYPE)
     SET(CMAKE_BUILD_TYPE Release)
@@ -18,10 +20,17 @@ function(checkPackage package customMessage)
         endif()
     endif()
 endfunction(checkPackage)
+# Don't cross build, also skip building
+# if the ZED SDK is missing
+unset(BUILD_ME CACHE)
+if (NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+  find_package(ZED 2.7)
+  if (ZED_FOUND)
+    set (BUILD_ME True)
+  endif()
+endif()
 
-find_package(ZED 2.3)
-checkPackage("ZED" "ZED SDK not found, install it from:\n https://www.stereolabs.com/developers/")
-
+if (BUILD_ME)
 exec_program(uname ARGS -p OUTPUT_VARIABLE CMAKE_SYSTEM_NAME2)
 if ( CMAKE_SYSTEM_NAME2 MATCHES "aarch64" ) # Jetson TX
     SET(CUDA_USE_STATIC_CUDA_RUNTIME OFF)
@@ -131,7 +140,6 @@ if(NOT DEFINED CUDA_NPP_LIBRARIES_ZED)
 endif()
 
 
-add_definitions(-std=c++11)
 set(LINK_LIBRARIES
   ${catkin_LIBRARIES}
   ${ZED_LIBRARIES}
@@ -173,3 +181,5 @@ install(DIRECTORY
   urdf
   params
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+
+endif()
