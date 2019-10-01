@@ -33,6 +33,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <arg name="nodelet_manager_name"  default="zed_nodelet_manager" />
     <arg name="node_name"             default="zed_node" />
 
+	<arg name="common_params_file"    default="$(find zed_wrapper)/params/common.yaml" />
+	<arg name="camera_params_file"    default="$(find zed_wrapper)/params/$(arg camera_model).yaml" />
+
     <!-- ROS URDF description of the ZED -->
     <group if="$(arg publish_urdf)">
         <param name="zed_description" textfile="$(find zed_wrapper)/urdf/$(arg camera_model).urdf" />
@@ -42,8 +45,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     </group>
 
     <node pkg="nodelet" type="nodelet" name="$(arg node_name)" args="load zed_wrapper/ZEDWrapperNodelet $(arg nodelet_manager_name)" output="screen">
-        <rosparam file="$(find zed_wrapper)/params/common.yaml" command="load" />
-        <rosparam file="$(find zed_wrapper)/params/$(arg camera_model).yaml" command="load" />
+        <rosparam file="$(arg common_params_file)" command="load" />
+        <rosparam file="$(arg camera_params_file)" command="load" />
 
         <!-- SVO file path -->
         <param name="svo_file"                  value="$(arg svo_file)" />
