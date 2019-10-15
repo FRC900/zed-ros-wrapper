@@ -732,7 +732,7 @@ namespace zed_wrapper {
         mNhNs.getParam("brightness", mCamBrightness);
         NODELET_INFO_STREAM(" * [DYN] brightness\t\t-> " << mCamBrightness);
         mNhNs.getParam("auto_brightness", mCamAutoBrightness);
-        NODELET_INFO_STREAM(" * [DYN] auto_brightness\t\t-> " << (mCamAutoBrightness? "ENABLED" : "DISABLED"));
+        NODELET_INFO_STREAM(" * [DYN] auto_brightness\t-> " << (mCamAutoBrightness? "ENABLED" : "DISABLED"));
 
         if (mCamAutoBrightness) {
             mTriggerAutoBrightness = true;
@@ -750,14 +750,14 @@ namespace zed_wrapper {
         mNhNs.getParam("saturation", mCamSaturation);
         NODELET_INFO_STREAM(" * [DYN] saturation\t\t-> " << mCamSaturation);
         mNhNs.getParam("auto_saturation", mCamAutoSaturation);
-        NODELET_INFO_STREAM(" * [DYN] auto_saturation\t\t-> " << (mCamAutoSaturation? "ENABLED" : "DISABLED"));
+        NODELET_INFO_STREAM(" * [DYN] auto_saturation\t-> " << (mCamAutoSaturation? "ENABLED" : "DISABLED"));
 
         if (mCamAutoSaturation) {
             mTriggerAutoSaturation = true;
         }
 
         mNhNs.getParam("hue", mCamHue);
-        NODELET_INFO_STREAM(" * [DYN] hue\t\t-> " << mCamHue);
+        NODELET_INFO_STREAM(" * [DYN] hue\t\t\t-> " << mCamHue);
         mNhNs.getParam("auto_hue", mCamAutoHue);
         NODELET_INFO_STREAM(" * [DYN] auto_hue\t\t-> " << (mCamAutoHue? "ENABLED" : "DISABLED"));
 
@@ -768,7 +768,6 @@ namespace zed_wrapper {
         mNhNs.getParam("whitebalance", mCamWhitebalance);
         NODELET_INFO_STREAM(" * [DYN] whitebalance\t\t-> " << mCamWhitebalance);
         mNhNs.getParam("auto_whitebalance", mCamAutoWhitebalance);
-        NODELET_INFO_STREAM(" * [DYN] auto_brightness\t\t-> " << (mCamAutoWhitebalance? "ENABLED" : "DISABLED"));
 
         if (mCamAutoWhitebalance) {
             mTriggerAutoWhitebalance = true;
@@ -2435,7 +2434,6 @@ namespace zed_wrapper {
                         mZed.setCameraSettings(sl::CAMERA_SETTINGS_GAIN, mCamGain);
                     }
                 }
-
 
                 if (mCamAutoBrightness) {
                     // getCameraSettings() can't check status of auto brightness
