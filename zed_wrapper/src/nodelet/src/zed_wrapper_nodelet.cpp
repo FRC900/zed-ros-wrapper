@@ -2370,6 +2370,15 @@ namespace zed_wrapper {
                         if (computeTracking) {  // Start the tracking
                             start_tracking();
                         }
+
+						// Reset these to force a re-write of camera settings once reconnected
+						mTriggerAutoExposure     = true;
+						mTriggerAutoBrightness   = true;
+						mTriggerAutoContrast     = true;
+						mTriggerAutoHue          = true;
+						mTriggerAutoSaturation   = true;
+						mTriggerAutoWhitebalance = true;
+
                     }
 
                     mDiagUpdater.update();
