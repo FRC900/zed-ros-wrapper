@@ -2428,6 +2428,7 @@ namespace zed_wrapper {
                     if (mTriggerAutoExposure) {
                         mZed.setCameraSettings(sl::CAMERA_SETTINGS_EXPOSURE, 0, true);
                         mTriggerAutoExposure = false;
+						ROS_INFO(" ===== Set ZED autoExposure");
                     }
                 } else {
                     int actual_exposure =
@@ -2435,12 +2436,14 @@ namespace zed_wrapper {
 
                     if (actual_exposure != mCamExposure) {
                         mZed.setCameraSettings(sl::CAMERA_SETTINGS_EXPOSURE, mCamExposure);
+						ROS_INFO_STREAM(" ==== Set ZED Exposure to " << mCamExposure);
                     }
 
                     int actual_gain = mZed.getCameraSettings(sl::CAMERA_SETTINGS_GAIN);
 
                     if (actual_gain != mCamGain) {
                         mZed.setCameraSettings(sl::CAMERA_SETTINGS_GAIN, mCamGain);
+						ROS_INFO_STREAM(" ==== Set ZED Gain to " << mCamGain);
                     }
                 }
 
@@ -2450,11 +2453,15 @@ namespace zed_wrapper {
                     if (mTriggerAutoBrightness) {
                         mZed.setCameraSettings(sl::CAMERA_SETTINGS_BRIGHTNESS, 0, true);
                         mTriggerAutoBrightness = false;
+						ROS_INFO(" ===== Set ZED autoBrightness");
                     }
                 } else {
                     int actual_brightness = mZed.getCameraSettings(sl::CAMERA_SETTINGS_BRIGHTNESS);
                     if (actual_brightness != mCamBrightness)
+					{
                         mZed.setCameraSettings(sl::CAMERA_SETTINGS_BRIGHTNESS, mCamBrightness);
+						ROS_INFO_STREAM(" ==== Set ZED Brightness to " << mCamBrightness);
+					}
                 }
 
                 if (mCamAutoContrast) {
@@ -2463,11 +2470,15 @@ namespace zed_wrapper {
                     if (mTriggerAutoContrast) {
                         mZed.setCameraSettings(sl::CAMERA_SETTINGS_CONTRAST, 0, true);
                         mTriggerAutoContrast = false;
+						ROS_INFO_STREAM(" ==== Set ZED autoContrast");
                     }
                 } else {
                     int actual_contrast = mZed.getCameraSettings(sl::CAMERA_SETTINGS_CONTRAST);
                     if (actual_contrast != mCamContrast)
+					{
                         mZed.setCameraSettings(sl::CAMERA_SETTINGS_CONTRAST, mCamContrast);
+						ROS_INFO_STREAM(" ==== Set ZED Contrast to " << mCamContrast);
+					}
                 }
 
                 if (mCamAutoHue) {
@@ -2476,11 +2487,15 @@ namespace zed_wrapper {
                     if (mTriggerAutoHue) {
                         mZed.setCameraSettings(sl::CAMERA_SETTINGS_HUE, 0, true);
                         mTriggerAutoHue = false;
+						ROS_INFO_STREAM(" ==== Set ZED autoHue");
                     }
                 } else {
                     int actual_hue = mZed.getCameraSettings(sl::CAMERA_SETTINGS_HUE);
                     if (actual_hue != mCamHue)
+					{
                         mZed.setCameraSettings(sl::CAMERA_SETTINGS_HUE, mCamHue);
+						ROS_INFO_STREAM(" ==== Set ZED Hue to " << mCamHue);
+					}
                 }
 
                 if (mCamAutoSaturation) {
@@ -2489,11 +2504,15 @@ namespace zed_wrapper {
                     if (mTriggerAutoSaturation) {
                         mZed.setCameraSettings(sl::CAMERA_SETTINGS_SATURATION, 0, true);
                         mTriggerAutoSaturation = false;
+						ROS_INFO_STREAM(" ==== Set ZED autoSaturation");
                     }
                 } else {
                     int actual_saturation = mZed.getCameraSettings(sl::CAMERA_SETTINGS_SATURATION);
                     if (actual_saturation != mCamSaturation)
+					{
                         mZed.setCameraSettings(sl::CAMERA_SETTINGS_SATURATION, mCamSaturation);
+						ROS_INFO_STREAM(" ==== Set ZED Saturation to " << mCamSaturation);
+					}
                 }
 
                 if (mCamAutoWhitebalance) {
@@ -2502,11 +2521,15 @@ namespace zed_wrapper {
                     if (mTriggerAutoWhitebalance) {
                         mZed.setCameraSettings(sl::CAMERA_SETTINGS_WHITEBALANCE, 0, true);
                         mTriggerAutoWhitebalance = false;
+						ROS_INFO_STREAM(" ==== Set ZED autoWhitebalance");
                     }
                 } else {
                     int actual_whitebalance = mZed.getCameraSettings(sl::CAMERA_SETTINGS_WHITEBALANCE);
                     if (actual_whitebalance != mCamWhitebalance)
+					{
                         mZed.setCameraSettings(sl::CAMERA_SETTINGS_WHITEBALANCE, mCamWhitebalance * 100);
+						ROS_INFO_STREAM(" ==== Set ZED Whitebalance to " << mCamWhitebalance);
+					}
                 }
 
                 mCamDataMutex.lock();
