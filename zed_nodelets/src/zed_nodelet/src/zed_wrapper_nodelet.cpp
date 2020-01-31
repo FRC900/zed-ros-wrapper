@@ -851,11 +851,16 @@ void ZEDWrapperNodelet::readParameters() {
     if (mCamAutoExposure) {
         mTriggerAutoExposure = true;
     }
+<<<<<<< HEAD
     if (mCamAutoWB) {
         mTriggerAutoWB = true;
     }
+=======
+	if (mCamAutoWB) {
+		mTriggerAutoWB = true;
+	}
+>>>>>>> Updated to auto-exposure and auto-wb triggers - hopefully force them
     // <---- Dynamic
-
 }
 
 void ZEDWrapperNodelet::checkResolFps() {
@@ -3115,6 +3120,14 @@ void ZEDWrapperNodelet::device_poll_thread_func() {
                     if (computeTracking) {  // Start the tracking
                         start_pos_tracking();
                     }
+
+					// Force auto exposure and auto WB to be reset when reconnecting to the camera
+					if (mCamAutoExposure) {
+						mTriggerAutoExposure = true;
+					}
+					if (mCamAutoWB) {
+						mTriggerAutoWB = true;
+					}
                 }
 
                 mDiagUpdater.update();
