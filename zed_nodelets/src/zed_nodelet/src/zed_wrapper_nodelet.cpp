@@ -851,15 +851,9 @@ void ZEDWrapperNodelet::readParameters() {
     if (mCamAutoExposure) {
         mTriggerAutoExposure = true;
     }
-<<<<<<< HEAD
-    if (mCamAutoWB) {
-        mTriggerAutoWB = true;
-    }
-=======
 	if (mCamAutoWB) {
 		mTriggerAutoWB = true;
 	}
->>>>>>> Updated to auto-exposure and auto-wb triggers - hopefully force them
     // <---- Dynamic
 }
 
