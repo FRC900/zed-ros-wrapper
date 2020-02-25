@@ -219,6 +219,7 @@ void ZEDWrapperNodelet::onInit() {
     mZedParams.coordinate_system = sl::COORDINATE_SYSTEM::RIGHT_HANDED_Z_UP_X_FWD;
     NODELET_INFO_STREAM(" * Camera coordinate system\t-> " << sl::toString(mZedParams.coordinate_system));
 
+	mGpuId = 0; // TODO - KCJ - big hack
     mZedParams.coordinate_units = sl::UNIT::METER;
     mZedParams.depth_mode = static_cast<sl::DEPTH_MODE>(mDepthMode);
     mZedParams.sdk_verbose = mVerbose;
@@ -257,8 +258,7 @@ void ZEDWrapperNodelet::onInit() {
     }
     NODELET_INFO_STREAM(" ...  " << sl::toString( mZedRealCamModel) << " ready");
 
-    //CUdevice devid;
-    cuCtxGetDevice(&mGpuId);
+    //cuCtxGetDevice(&mGpuId);
 
     NODELET_INFO_STREAM("ZED SDK running on GPU #" << mGpuId);
 
@@ -596,7 +596,7 @@ void ZEDWrapperNodelet::readParameters() {
     mNhNs.getParam("general/gpu_id", mGpuId);
     NODELET_INFO_STREAM(" * Gpu ID\t\t\t-> " << mGpuId);
     mNhNs.getParam("general/zed_id", mZedId);
-    NODELET_INFO_STREAM(" * Camera ID\t\t\t-> " << mGpuId);
+    NODELET_INFO_STREAM(" * Camera ID\t\t\t-> " << mZedId);
     mNhNs.getParam("general/verbose", mVerbose);
     NODELET_INFO_STREAM(" * Verbose\t\t\t-> " << (mVerbose ? "ENABLED" : "DISABLED"));
     mNhNs.param<bool>("general/camera_flip", mCameraFlip, false);
