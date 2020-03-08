@@ -1850,7 +1850,7 @@ void ZEDWrapperNodelet::pubFusedPointCloudCallback(const ros::TimerEvent& e) {
         resized = true;
     }
 
-    std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
+    //std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
 
     //NODELET_INFO_STREAM("Chunks: " << mFusedPC.chunks.size());
 
@@ -1860,7 +1860,7 @@ void ZEDWrapperNodelet::pubFusedPointCloudCallback(const ros::TimerEvent& e) {
     float* ptCloudPtr = (float*)(&pointcloudFusedMsg->data[0]);
     int updated = 0;
 
-    for (int c = 0; c < mFusedPC.chunks.size(); c++) {
+    for (size_t c = 0; c < mFusedPC.chunks.size(); c++) {
         if (mFusedPC.chunks[c].has_been_updated || resized) {
 
             updated++;
@@ -1883,13 +1883,12 @@ void ZEDWrapperNodelet::pubFusedPointCloudCallback(const ros::TimerEvent& e) {
         }
     }
 
-    std::chrono::steady_clock::time_point end_time = std::chrono::steady_clock::now();
+    //        std::chrono::steady_clock::time_point end_time = std::chrono::steady_clock::now();
 
     //NODELET_INFO_STREAM("Updated: " << updated);
 
 
     //double elapsed_usec = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time).count();
-
 
     //        NODELET_INFO_STREAM("Data copy: " << elapsed_usec << " usec [" << ptsCount << "] - " << (static_cast<double>
     //                        (ptsCount) / elapsed_usec) << " pts/usec");
@@ -2021,7 +2020,7 @@ void ZEDWrapperNodelet::fillCamDepthInfo(sl::Camera& zed, sensor_msgs::CameraInf
     zedParam = zed.getCameraInformation(mMatResolDepth).camera_configuration.calibration_parameters;
 #endif
 
-    float baseline = zedParam.getCameraBaseline();
+    //float baseline = zedParam.getCameraBaseline();
     depth_info_msg->distortion_model = sensor_msgs::distortion_models::PLUMB_BOB;
     depth_info_msg->D.resize(5);
     depth_info_msg->D[0] = zedParam.left_cam.disto[0];   // k1
@@ -2186,7 +2185,7 @@ void ZEDWrapperNodelet::dynamicReconfCallback(zed_nodelets::ZedConfig& config, u
 
     case AUTO_EXP_GAIN:
         mCamAutoExposure = config.auto_exposure_gain;
-        NODELET_INFO_STREAM("Reconfigure auto exposure/gain: " << mCamAutoExposure?"ENABLED":"DISABLED");
+        NODELET_INFO_STREAM("Reconfigure auto exposure/gain: " << (mCamAutoExposure?"ENABLED":"DISABLED"));
         if( !mCamAutoExposure ) {
             mZed.setCameraSettings(sl::VIDEO_SETTINGS::AEC_AGC, 0 );
             mTriggerAutoExposure = false;
@@ -2221,7 +2220,7 @@ void ZEDWrapperNodelet::dynamicReconfCallback(zed_nodelets::ZedConfig& config, u
 
     case AUTO_WB:
         mCamAutoWB = config.auto_whitebalance;
-        NODELET_INFO_STREAM("Reconfigure auto white balance: " << mCamAutoWB?"ENABLED":"DISABLED");
+        NODELET_INFO_STREAM("Reconfigure auto white balance: " << (mCamAutoWB?"ENABLED":"DISABLED"));
         if( !mCamAutoWB ) {
             mZed.setCameraSettings(sl::VIDEO_SETTINGS::WHITEBALANCE_AUTO, 0 );
             mTriggerAutoWB = false;
@@ -2522,7 +2521,7 @@ void ZEDWrapperNodelet::pubPathCallback(const ros::TimerEvent& e) {
 
     // Circular vector
     if (mPathMaxCount != -1) {
-        if (mOdomPath.size() == mPathMaxCount) {
+        if (static_cast<int>(mOdomPath.size()) == mPathMaxCount) {
             NODELET_DEBUG("Path vectors full: rotating ");
             std::rotate(mOdomPath.begin(), mOdomPath.begin() + 1, mOdomPath.end());
             std::rotate(mMapPath.begin(), mMapPath.begin() + 1, mMapPath.end());
@@ -2992,13 +2991,13 @@ void ZEDWrapperNodelet::device_poll_thread_func() {
 
         uint32_t objDetSubnumber = 0;
         uint32_t objDetVizSubnumber = 0;
-        bool objDetActive = false;
+        //bool objDetActive = false;
         if (mObjDetEnabled) {
             objDetSubnumber = mPubObjDet.getNumSubscribers();
             objDetVizSubnumber = mPubObjDetViz.getNumSubscribers();
-            if (objDetSubnumber > 0 || objDetVizSubnumber > 0) {
-                objDetActive = true;
-            }
+            //if (objDetSubnumber > 0 || objDetVizSubnumber > 0) {
+                //objDetActive = true;
+            //}
         }
 
         mGrabActive =  mRecording || mStreaming || mMappingEnabled || mObjDetEnabled || mTrackingActivated ||
@@ -3389,7 +3388,7 @@ void ZEDWrapperNodelet::device_poll_thread_func() {
 
             // Publish the zed camera pose if someone has subscribed to
             if (computeTracking) {
-                static sl::POSITIONAL_TRACKING_STATE oldStatus;
+                //static sl::POSITIONAL_TRACKING_STATE oldStatus;
                 mTrackingStatus = mZed.getPosition(mLastZedPose, sl::REFERENCE_FRAME::WORLD);
 
                 sl::Translation translation = mLastZedPose.getTranslation();
@@ -3496,7 +3495,7 @@ void ZEDWrapperNodelet::device_poll_thread_func() {
                     mTrackingReady = true;
                 }
 
-                oldStatus = mTrackingStatus;
+                //oldStatus = mTrackingStatus;
             }
 
             // Publish pose tf only if enabled
@@ -4054,13 +4053,13 @@ void ZEDWrapperNodelet::detectObjects(bool publishObj, bool publishViz, ros::Tim
             objMsg.objects[i].linear_vel.y = data.velocity.y;
             objMsg.objects[i].linear_vel.z = data.velocity.z;
 
-            for (int c = 0; c < data.bounding_box_2d.size(); c++) {
+            for (size_t c = 0; c < data.bounding_box_2d.size(); c++) {
                 objMsg.objects[i].bbox_2d[c].x = data.bounding_box_2d[c].x;
                 objMsg.objects[i].bbox_2d[c].y = data.bounding_box_2d[c].y;
                 objMsg.objects[i].bbox_2d[c].z = 0.0f;
             }
 
-            for (int c = 0; c < data.bounding_box.size(); c++) {
+            for (size_t c = 0; c < data.bounding_box.size(); c++) {
                 objMsg.objects[i].bbox_3d[c].x = data.bounding_box[c].x;
                 objMsg.objects[i].bbox_3d[c].y = data.bounding_box[c].y;
                 objMsg.objects[i].bbox_3d[c].z = data.bounding_box[c].z;
