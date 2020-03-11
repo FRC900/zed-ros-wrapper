@@ -219,7 +219,6 @@ void ZEDWrapperNodelet::onInit() {
     mZedParams.coordinate_system = sl::COORDINATE_SYSTEM::RIGHT_HANDED_Z_UP_X_FWD;
     NODELET_INFO_STREAM(" * Camera coordinate system\t-> " << sl::toString(mZedParams.coordinate_system));
 
-	mGpuId = 0; // TODO - KCJ - big hack
     mZedParams.coordinate_units = sl::UNIT::METER;
     mZedParams.depth_mode = static_cast<sl::DEPTH_MODE>(mDepthMode);
     mZedParams.sdk_verbose = mVerbose;
@@ -663,8 +662,8 @@ void ZEDWrapperNodelet::readParameters() {
     mNhNs.getParam("pos_tracking/path_pub_rate", mPathPubRate);
     NODELET_INFO_STREAM(" * Path rate\t\t\t-> " <<  mPathPubRate << " Hz");
     mNhNs.getParam("pos_tracking/path_max_count", mPathMaxCount);
-    NODELET_INFO_STREAM(" * Path history size\t\t-> " << (mPathMaxCount == -1) ? std::string("INFINITE") : std::to_string(
-                                                                                     mPathMaxCount));
+    NODELET_INFO_STREAM(" * Path history size\t\t-> " << ((mPathMaxCount == -1) ? std::string("INFINITE") : std::to_string(
+                                                                                     mPathMaxCount)));
 
     if (mPathMaxCount < 2 && mPathMaxCount != -1) {
         mPathMaxCount = 2;
@@ -1858,12 +1857,11 @@ void ZEDWrapperNodelet::pubFusedPointCloudCallback(const ros::TimerEvent& e) {
 
     int index = 0;
     float* ptCloudPtr = (float*)(&pointcloudFusedMsg->data[0]);
-    int updated = 0;
+    //int updated = 0;
 
     for (size_t c = 0; c < mFusedPC.chunks.size(); c++) {
         if (mFusedPC.chunks[c].has_been_updated || resized) {
-
-            updated++;
+            //updated++;
 
             size_t chunkSize = mFusedPC.chunks[c].vertices.size();
 
@@ -3544,9 +3542,9 @@ void ZEDWrapperNodelet::device_poll_thread_func() {
 
             double mean_elab_sec = mElabPeriodMean_sec->addValue(elab_usec / 1000000.);
 
-            static int count_warn = 0;
 
             if (!loop_rate.sleep()) {
+				static int count_warn = 0;
                 if (mean_elab_sec > (1. / mCamFrameRate)) {
                     if (++count_warn > 10) {
                         NODELET_DEBUG_THROTTLE(
