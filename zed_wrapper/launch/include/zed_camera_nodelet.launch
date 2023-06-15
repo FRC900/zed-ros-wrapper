@@ -46,6 +46,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <arg name="cam_pitch"             default="0.0" />
     <arg name="cam_yaw"               default="0.0" />
 
+	<arg name="common_params_file"    default="$(find zed_wrapper)/params/common.yaml" />
+	<arg name="camera_params_file"    default="$(find zed_wrapper)/params/$(arg camera_model).yaml" />
+
     <!-- NOTE: THE NODELET MANAGER MUST BE STARTED EXTERNALLY. SEE "zed_nodelet_example" -->
 
     <!-- Name of the Nodelet Manager -->
@@ -56,7 +59,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         <param name="$(arg camera_name)_description"
                command="$(find xacro)/xacro '$(find zed_wrapper)/urdf/zed_descr.urdf.xacro'
                         camera_name:=$(arg camera_name)
-                        camera_model:=$(arg camera_model)"
+                        camera_model:=$(arg camera_model)
+                        base_frame:=$(arg base_frame)
+                        cam_pos_x:=$(arg cam_pos_x)
+                        cam_pos_y:=$(arg cam_pos_y)
+                        cam_pos_z:=$(arg cam_pos_z)
+                        cam_roll:=$(arg cam_roll)
+                        cam_pitch:=$(arg cam_pitch)
+                        cam_yaw:=$(arg cam_yaw)"
         />
 
         <node name="$(arg camera_name)_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" output="screen" required="true">
@@ -65,8 +75,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     </group>
 
     <node pkg="nodelet" type="nodelet" name="$(arg node_name)" args="load zed_nodelets/ZEDWrapperNodelet $(arg nodelet_manager_name)" output="screen">
-        <rosparam file="$(find zed_wrapper)/params/common.yaml" command="load" />
-        <rosparam file="$(find zed_wrapper)/params/$(arg camera_model).yaml" command="load" />
+        <rosparam file="$(arg common_params_file)" command="load" />
+        <rosparam file="$(arg camera_params_file)" command="load" />
 
         <!-- Camera name -->
         <param name="general/camera_name"               value="$(arg camera_name)" />

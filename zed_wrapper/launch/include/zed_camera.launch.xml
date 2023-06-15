@@ -34,6 +34,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <arg name="publish_urdf"          default="true" />
 
     <arg name="camera_id"             default="0" />
+    <arg name="serial_number"         default="0" />
     <arg name="gpu_id"                default="-1" />
 
     <!-- Position respect to base frame (i.e. "base_link) -->
@@ -45,6 +46,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <arg name="cam_roll"              default="0.0" />
     <arg name="cam_pitch"             default="0.0" />
     <arg name="cam_yaw"               default="0.0" />
+
+	<arg name="common_params_file"    default="$(find zed_wrapper)/params/common.yaml" />
+	<arg name="camera_params_file"    default="$(find zed_wrapper)/params/$(arg camera_model).yaml" />
 
     <!-- ROS URDF description of the ZED -->
     <group if="$(arg publish_urdf)">
@@ -67,8 +71,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     </group>
 
     <node name="$(arg node_name)" pkg="zed_wrapper" type="zed_wrapper_node" output="screen" required="true"><!-- launch-prefix="valgrind" -->
-        <rosparam file="$(find zed_wrapper)/params/common.yaml" command="load" />
-        <rosparam file="$(find zed_wrapper)/params/$(arg camera_model).yaml" command="load" />
+        <rosparam file="$(arg common_params_file)" command="load" />
+        <rosparam file="$(arg camera_params_file)" command="load" />
 
         <!-- Camera name -->
         <param name="general/camera_name"               value="$(arg camera_name)" />
@@ -84,6 +88,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
         <!-- Camera ID -->
         <param name="general/zed_id"                    value="$(arg camera_id)" />
+
+        <!-- Camera Serial Number -->
+        <param name="general/serial_number"             value="$(arg serial_number)" />
 
         <!-- GPU ID -->
         <param name="general/gpu_id"                    value="$(arg gpu_id)" />
