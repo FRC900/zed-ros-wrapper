@@ -632,6 +632,7 @@ private:
   bool mSvoMode = false;
   double mCamMinDepth;
   double mCamMaxDepth;
+  double mStartupDelay{0};
   std::string mClickedPtTopic = "/clicked_point";
 
   bool mFillMode = false;
