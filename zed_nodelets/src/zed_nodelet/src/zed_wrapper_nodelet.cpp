@@ -274,6 +274,12 @@ void ZEDWrapperNodelet::onInit()
 
   mConnStatus = sl::ERROR_CODE::CAMERA_NOT_DETECTED;
 
+  if (mStartupDelay > 0)
+  {
+    NODELET_INFO_STREAM(" *** Waiting " << mStartupDelay << "sec. before opening the ZED ***");
+    ros::Duration(mStartupDelay).sleep();
+  }
+
   NODELET_INFO_STREAM(" *** Opening " << sl::toString(mZedUserCamModel) << " - " << ss.str().c_str() << " ***");
   while (mConnStatus != sl::ERROR_CODE::SUCCESS)
   {
@@ -889,6 +895,11 @@ void ZEDWrapperNodelet::readGeneralParams()
 
   std::string parsed_str = getRoiParam("general/region_of_interest", mRoiParam);
   NODELET_INFO_STREAM(" * Region of interest\t\t-> " << parsed_str.c_str());
+
+  mNhNs.getParam("general/startup_delay", mStartupDelay);
+  NODELET_INFO_STREAM(" * Region of interest\t\t-> " << parsed_str.c_str());
+
+  mNhNs.getParam("general/startup_delay", mStartupDelay);
 }
 
 void ZEDWrapperNodelet::readDepthParams()
