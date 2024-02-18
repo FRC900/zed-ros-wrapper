@@ -47,6 +47,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <arg name="cam_pitch"             default="0.0" />
     <arg name="cam_yaw"               default="0.0" />
 
+    <!-- Optional delay before opening camera ... testing how it helps dual camera launch-->
+    <arg name="startup_delay"         default="0.0" />
+
 	<arg name="common_params_file"    default="$(find zed_wrapper)/params/common.yaml" />
 	<arg name="camera_params_file"    default="$(find zed_wrapper)/params/$(arg camera_model).yaml" />
 
@@ -94,5 +97,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
         <!-- GPU ID -->
         <param name="general/gpu_id"                    value="$(arg gpu_id)" />
+
+        <!-- Startup delay -->
+        <param name="general/startup_delay"              value="$(arg startup_delay)" />
     </node>
 </launch>
