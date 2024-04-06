@@ -1566,7 +1566,7 @@ void ZEDWrapperNodelet::checkResolFps()
       break;
 
     case sl::RESOLUTION::HD1200:
-      if (mCamFrameRate == 60 || mCamFrameRate == 30)
+      if (mCamFrameRate == 60 || mCamFrameRate == 30 || mCamFrameRate == 15)
       {
         break;
       }
