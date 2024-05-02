@@ -126,6 +126,7 @@ void ZEDWrapperNodelet::onInit()
   std::string img_gray_topic = "/image_rect_gray";
   std::string img_raw_gray_topic_ = "/image_raw_gray";
   std::string raw_suffix = "_raw";
+  std::string gray_suffix = "_gray";
   std::string left_topic = leftTopicRoot + img_topic;
   std::string left_raw_topic = leftTopicRoot + raw_suffix + img_raw_topic;
   std::string right_topic = rightTopicRoot + img_topic;
@@ -134,12 +135,12 @@ void ZEDWrapperNodelet::onInit()
   std::string rgb_raw_topic = rgbTopicRoot + raw_suffix + img_raw_topic;
   std::string stereo_topic = stereoTopicRoot + img_topic;
   std::string stereo_raw_topic = stereoTopicRoot + raw_suffix + img_raw_topic;
-  std::string left_gray_topic = leftTopicRoot + img_gray_topic;
-  std::string left_raw_gray_topic = leftTopicRoot + raw_suffix + img_raw_gray_topic_;
-  std::string right_gray_topic = rightTopicRoot + img_gray_topic;
-  std::string right_raw_gray_topic = rightTopicRoot + raw_suffix + img_raw_gray_topic_;
-  std::string rgb_gray_topic = rgbTopicRoot + img_gray_topic;
-  std::string rgb_raw_gray_topic = rgbTopicRoot + raw_suffix + img_raw_gray_topic_;
+  std::string left_gray_topic = leftTopicRoot + gray_suffix + img_gray_topic;
+  std::string left_raw_gray_topic = leftTopicRoot + gray_suffix + raw_suffix + img_raw_gray_topic_;
+  std::string right_gray_topic = rightTopicRoot + gray_suffix + img_gray_topic;
+  std::string right_raw_gray_topic = rightTopicRoot + gray_suffix + raw_suffix + img_raw_gray_topic_;
+  std::string rgb_gray_topic = rgbTopicRoot + gray_suffix + img_gray_topic;
+  std::string rgb_raw_gray_topic = rgbTopicRoot + gray_suffix + raw_suffix + img_raw_gray_topic_;
 
   // Set the disparity topic name
   std::string disparityTopic = "disparity/disparity_image";
@@ -2674,14 +2675,14 @@ void ZEDWrapperNodelet::callback_pubFusedPointCloud(const ros::TimerEvent& e)
   mPubFusedCloud.publish(pointcloudFusedMsg);
 }
 
-void ZEDWrapperNodelet::publishCamInfo(sensor_msgs::CameraInfoPtr camInfoMsg, ros::Publisher pubCamInfo, ros::Time t)
-{
-  static int seq = 0;
-  camInfoMsg->header.stamp = t;
-  camInfoMsg->header.seq = seq;
-  pubCamInfo.publish(camInfoMsg);
-  seq++;
-}
+// void ZEDWrapperNodelet::publishCamInfo(sensor_msgs::CameraInfoPtr camInfoMsg, ros::Publisher pubCamInfo, ros::Time t)
+// {
+//   static int seq = 0;
+//   camInfoMsg->header.stamp = t;
+//   camInfoMsg->header.seq = seq;
+//   pubCamInfo.publish(camInfoMsg);
+//   seq++;
+// }
 
 void ZEDWrapperNodelet::fillCamInfo(sl::Camera& zed, sensor_msgs::CameraInfoPtr leftCamInfoMsg,
                                     sensor_msgs::CameraInfoPtr rightCamInfoMsg, std::string leftFrameId,
@@ -3024,6 +3025,16 @@ void ZEDWrapperNodelet::pubVideoDepth()
                      leftGrayRawSubnumber + rightGraySubnumber + rightGrayRawSubnumber + depthSubnumber +
                      disparitySubnumber + confMapSubnumber + stereoSubNumber + stereoRawSubNumber;
 
+
+  NODELET_DEBUG_STREAM("tot_sub = " << tot_sub << " - rgb: " << rgbSubnumber << " - rgb_raw: " << rgbRawSubnumber
+                                    << " - left: " << leftSubnumber << " - left_raw: " << leftRawSubnumber
+                                    << " - right: " << rightSubnumber << " - right_raw: " << rightRawSubnumber
+                                    << " - rgb_gray: " << rgbGraySubnumber << " - rgb_gray_raw: " << rgbGrayRawSubnumber
+                                    << " - left_gray: " << leftGraySubnumber << " - left_gray_raw: " << leftGrayRawSubnumber
+                                    << " - right_gray: " << rightGraySubnumber << " - right_gray_raw: " << rightGrayRawSubnumber
+                                    << " - depth: " << depthSubnumber << " - disparity: " << disparitySubnumber
+                                    << " - conf_map: " << confMapSubnumber << " - stereo: " << stereoSubNumber
+                                    << " - stereo_raw: " << stereoRawSubNumber);
   bool retrieved = false;
 
   sl::Mat mat_left, mat_left_raw;
