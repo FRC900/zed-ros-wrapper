@@ -258,7 +258,7 @@ void ZEDWrapperNodelet::onInit()
 
   mZedParams.async_grab_camera_recovery = true;
   mZedParams.coordinate_units = sl::UNIT::METER;
-  mZedParams.depth_mode = static_cast<sl::DEPTH_MODE>(mDepthMode);
+  mZedParams.depth_mode = mDepthMode;
   mZedParams.sdk_verbose = mSdkVerbose;
   mZedParams.sdk_gpu_id = mGpuId;
   mZedParams.depth_stabilization = mDepthStabilization;
@@ -898,7 +898,7 @@ void ZEDWrapperNodelet::readGeneralParams()
   NODELET_INFO_STREAM(" * Region of interest\t\t-> " << parsed_str.c_str());
 
   mNhNs.getParam("general/startup_delay", mStartupDelay);
-  NODELET_INFO_STREAM(" * Region of interest\t\t-> " << parsed_str.c_str());
+  NODELET_INFO_STREAM(" * Startup Delay-> " << parsed_str.c_str());
 
   mNhNs.getParam("general/startup_delay", mStartupDelay);
 }
@@ -979,11 +979,15 @@ void ZEDWrapperNodelet::readPosTrkParams()
     {
       mPosTrkMode = sl::POSITIONAL_TRACKING_MODE::GEN_2;
     }
+    else if (pos_trk_mode == "GEN_3")
+    {
+      mPosTrkMode = sl::POSITIONAL_TRACKING_MODE::GEN_3;
+    }
     else
     {
       NODELET_WARN_STREAM("'pos_tracking/pos_tracking_mode' not valid ('" << pos_trk_mode
                                                                           << "'). Using default value.");
-      mPosTrkMode = sl::POSITIONAL_TRACKING_MODE::GEN_2;
+      mPosTrkMode = sl::POSITIONAL_TRACKING_MODE::GEN_3;
     }
     NODELET_INFO_STREAM(" * Positional tracking mode\t-> " << sl::toString(mPosTrkMode).c_str());
 
@@ -3026,15 +3030,15 @@ void ZEDWrapperNodelet::pubVideoDepth()
                      disparitySubnumber + confMapSubnumber + stereoSubNumber + stereoRawSubNumber;
 
 
-  NODELET_DEBUG_STREAM("tot_sub = " << tot_sub << " - rgb: " << rgbSubnumber << " - rgb_raw: " << rgbRawSubnumber
-                                    << " - left: " << leftSubnumber << " - left_raw: " << leftRawSubnumber
-                                    << " - right: " << rightSubnumber << " - right_raw: " << rightRawSubnumber
-                                    << " - rgb_gray: " << rgbGraySubnumber << " - rgb_gray_raw: " << rgbGrayRawSubnumber
-                                    << " - left_gray: " << leftGraySubnumber << " - left_gray_raw: " << leftGrayRawSubnumber
-                                    << " - right_gray: " << rightGraySubnumber << " - right_gray_raw: " << rightGrayRawSubnumber
-                                    << " - depth: " << depthSubnumber << " - disparity: " << disparitySubnumber
-                                    << " - conf_map: " << confMapSubnumber << " - stereo: " << stereoSubNumber
-                                    << " - stereo_raw: " << stereoRawSubNumber);
+  // NODELET_DEBUG_STREAM("tot_sub = " << tot_sub << " - rgb: " << rgbSubnumber << " - rgb_raw: " << rgbRawSubnumber
+  //                                   << " - left: " << leftSubnumber << " - left_raw: " << leftRawSubnumber
+  //                                   << " - right: " << rightSubnumber << " - right_raw: " << rightRawSubnumber
+  //                                   << " - rgb_gray: " << rgbGraySubnumber << " - rgb_gray_raw: " << rgbGrayRawSubnumber
+  //                                   << " - left_gray: " << leftGraySubnumber << " - left_gray_raw: " << leftGrayRawSubnumber
+  //                                   << " - right_gray: " << rightGraySubnumber << " - right_gray_raw: " << rightGrayRawSubnumber
+  //                                   << " - depth: " << depthSubnumber << " - disparity: " << disparitySubnumber
+  //                                   << " - conf_map: " << confMapSubnumber << " - stereo: " << stereoSubNumber
+  //                                   << " - stereo_raw: " << stereoRawSubNumber);
   bool retrieved = false;
 
   sl::Mat mat_left, mat_left_raw;
