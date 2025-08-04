@@ -112,7 +112,8 @@ link_directories(${CUDA_LIBRARY_DIRS})
 ###############################################################################
 # ZED WRAPPER NODELET
 
-add_definitions(-std=c++11 -Wno-deprecated-declarations)
+set(CMAKE_CXX_STANDARD 17)
+add_definitions(-Wno-deprecated-declarations)
 set(LINK_LIBRARIES
   ${catkin_LIBRARIES}
   ${ZED_LIBRARIES}

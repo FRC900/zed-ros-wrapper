@@ -47,7 +47,6 @@ link_directories(${CUDA_LIBRARY_DIRS})
 ###############################################################################
 # EXECUTABLE
 
-add_definitions(-std=c++11)
 set(LINK_LIBRARIES
   ${catkin_LIBRARIES}
 )
